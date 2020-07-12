@@ -14,17 +14,15 @@ LF      EQU     $0A
 
 *MICAH RICE VERSION OF I/O PROMPT
 LOOP    LEA     MSG,A1      ;show message to user
-        MOVE.W  #14,D0
         TRAP	#15
         
-        MOVE.W	#4,D0       ;put memory address
+        MOVE.W	#2,D0       ;put memory address
         TRAP	#15
         
         LEA     MSGTWO,A1   ;show message to user
-        MOVE.W  #14,D0
         TRAP	#15
         
-        MOVE.W	#4,D0       ;put memory address
+        MOVE.W	#2,D0       ;put memory address
         TRAP	#15
         SIMHALT             ; halt simulator
         
@@ -35,6 +33,7 @@ MSG     DC.B    'Please input starting memory address:',CR,LF,0
 MSGTWO  DC.B    'Please input ending memory addresses:',CR,LF,0
 
     END    START        ; last line of source
+
 
 
 
