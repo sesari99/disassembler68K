@@ -6,10 +6,11 @@
 *-----------------------------------------------------------
  ORG    $1000
 START:                  ; first instruction of program
-    
+
 
 
 * Put program code here
+    SESARIO IMANPUTRA
     MICAH RICE
     ZACH  LIONG
     SIMHALT             ; halt simulator
