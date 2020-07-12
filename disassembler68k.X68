@@ -1,20 +1,20 @@
 *-----------------------------------------------------------
-* Title      :
-* Written by :
-* Date       :
-* Description:
+* Title      : Dissambler
+* Written by : TheCoolGroup
+* Date       : 7/21/20
+* Description: Interprets memory into Opcodes
 *-----------------------------------------------------------
     ORG    $1000
 START:                  ; first instruction of program
 
 * Put program code here
-	BAD CHANGE
-	MOVE.L      $#42ff, D0
+    
     SIMHALT             ; halt simulator
 
 * Put variables and constants here
 	Move.L $#45F3 
     END    START        ; last line of source
+
 
 *~Font name~Courier New~
 *~Font size~10~
