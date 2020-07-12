@@ -10,12 +10,14 @@ START:                  ; first instruction of program
 
 
 * Put program code here
-
+    MICAH RICE
+    
     SIMHALT             ; halt simulator
 
 * Put variables and constants here
 MSG DC.B    'Please input memory addresses:',0
     END    START        ; last line of source
+
 
 
 *~Font name~Courier New~
