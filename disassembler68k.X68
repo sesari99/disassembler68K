@@ -1,6 +1,6 @@
 *-----------------------------------------------------------
 * Title      :  I/O
-* Written by :  Sesario Imanputra
+* Written by :  Sesario Imanputra, Zachary Liong, Micha Rice
 * Date       :  
 * Description: Starts at 4000. For testing purposes, theres a bunch of ML codes to disassemble at 4000. Currently, the first ML code at 4000 is NOP.
 * afterwards, it will include ML of whatever we wrote after NOP.
@@ -11,20 +11,37 @@
 START:                  ; first instruction of program   
 
 ;inputs for testing are  here:
+
 ****************************************************
                 NOP
 ****************************************************
-DOFUNC
-                LEA     $9000,A1          ;had to specify or it wont work properly              
-                LEA     MESSAGEINPUT ,A1     
-                MOVE.W  #14,D0          
+      
+                LEA     WELMSG,A1   ;Display intro message
+                MOVE.B  #14,D0 
+                TRAP    #15
+                
+
+INPUT1                                   
+                LEA     MSGINPUT ,A1     ;Ask for first input
+                MOVE.B  #14,D0          
                 TRAP    #15       
                 
                 LEA     $9000,A1
                 
                 MOVE.W  #2,D0           ;had to specify or it wont work properly
-                TRAP    #15     
-                                
+                TRAP    #15    
+                BRA     FOR_LOOP 
+                
+INPUT2          LEA     MSGINPUT2,A1    ;Ask for second input
+                MOVE.B  #14,D0
+                TRAP    #15
+                
+                LEA     $9000,A1
+                
+                MOVE.W  #2,D0
+                TRAP    #15
+                BRA     FOR_LOOP
+                              
 FOR_LOOP        CMP.B   D1,D3
                 BEQ     CHECKNEG
                 CLR.W   D6               
@@ -110,8 +127,7 @@ OVERFLOWINPUT
                 CLR.L   D2
                 CLR.L   D1
                 CLR.L   D0
-                BRA     DOFUNC   
-
+                BRA     INPUT1   
 
 BADINPUT                
                 LEA     BADCHARACTER,A1     
@@ -125,7 +141,7 @@ BADINPUT
                 CLR.L   D2
                 CLR.L   D1
                 CLR.L   D0
-                BRA     DOFUNC                   
+                BRA     INPUT1                                    
             
 AtoH
                 CMPI.B  #$30,D6
@@ -159,6 +175,7 @@ NEGVALUE
                 ADD.W   #1,D5
                 RTS
 
+
                 
 ALPHA
                 CMPI.B #$41,D6
@@ -179,9 +196,9 @@ SAVESECOND
                 CMP.L   #$0,A2
                 BNE     FINISHSAVING
                 MOVE.L  D2,A2
-                BRA     DOFUNC 
+                BRA     INPUT2 
                 
-
+ 
 FINISHSAVING
                 MOVE.L  D2,A3
                 CLR.L   D2
@@ -214,7 +231,19 @@ END
     
 CR                  EQU     $0A
 LF                  EQU     $0D
-MESSAGEINPUT        DC.B    'Please enter IEEE 32-bit floating point number in hexadecimal: ',0
+
+WELMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',CR,LF
+                    DC.B    'X                                                 X',CR,LF
+                    DC.B    'X   Welcome to the Disassembler of Motorola 68k   X',CR,LF
+                    DC.B    'X                                                 X',CR,LF
+                    DC.B    'X           By:    Sesario Imanputra              X',CR,LF
+                    DC.B    'X                  Zachary Liong                  X',CR,LF
+                    DC.B    'X                  Micah Rice                     X',CR,LF
+                    DC.B    'X                                                 X',CR,LF
+                    DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',CR,LF,CR,LF, 0
+LINE_COUNT          DS.B    1
+MSGINPUT            DC.B    'Please enter first memory address: ',0
+MSGINPUT2           DC.B    'Please enter second memory address: ',0
 BADVALUE            DC.L    'INPUT VALUE EXCEEDS 32 BIT RANGE',CR,LF,0
 BADCHARACTER        DC.L    'INPUT HAS ILLEGAL CHARACTER',CR,LF,0
 MESSAGEOVERFLOW     DC.B    'END',0
@@ -224,7 +253,6 @@ CLR                 DC.B    CR,LF,0
 * Put variables and constants here
 
     END    START        ; last line of source
-                
 
 
 *~Font name~Courier New~
