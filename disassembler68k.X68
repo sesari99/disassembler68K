@@ -1,16 +1,6 @@
 *-----------------------------------------------------------
-<<<<<<< Updated upstream
-* Title      : Dissambler
-* Written by : TheCoolGroup
-* Date       : 7/21/20
-* Description: Interprets memory into Opcodes
-*-----------------------------------------------------------
- ORG    $1000
-START:                  ; first instruction of program
-
-=======
 * Title      :  I/O
-* Written by :  Sesario Imanputra, Zachary Liong, Micah Rice
+* Written by :  Sesario Imanputra, Zachary Liong, Micha Rice
 * Date       :  
 * Description: Starts at 4000. For testing purposes, theres a bunch of ML codes to disassemble at 4000. Currently, the first ML code at 4000 is NOP.
 * afterwards, it will include ML of whatever we wrote after NOP.
@@ -21,12 +11,18 @@ START:                  ; first instruction of program
 START:                  ; first instruction of program   
 
 ;inputs for testing are  here:
+
 ****************************************************
                 NOP
 ****************************************************
-DOFUNC
-                                
-                LEA     MESSAGEINPUT ,A1     
+      
+                LEA     WELMSG,A1   ;Display intro message
+                MOVE.B  #14,D0 
+                TRAP    #15
+                
+
+INPUT1                                   
+                LEA     MSGINPUT ,A1     ;Ask for first input
                 MOVE.B  #14,D0          
                 TRAP    #15       
                 
@@ -36,7 +32,7 @@ DOFUNC
                 TRAP    #15    
                 BRA     FOR_LOOP 
                 
-DOFUNC2         LEA     MSGINPUT2,A1
+INPUT2          LEA     MSGINPUT2,A1    ;Ask for second input
                 MOVE.B  #14,D0
                 TRAP    #15
                 
@@ -131,7 +127,7 @@ OVERFLOWINPUT
                 CLR.L   D2
                 CLR.L   D1
                 CLR.L   D0
-                BRA     DOFUNC   
+                BRA     INPUT1   
 
 
 BADINPUT                
@@ -146,7 +142,7 @@ BADINPUT
                 CLR.L   D2
                 CLR.L   D1
                 CLR.L   D0
-                BRA     DOFUNC                   
+                BRA     INPUT1                   
             
 AtoH
                 CMPI.B  #$30,D6
@@ -200,7 +196,7 @@ SAVESECOND
                 CMP.L   #$0,A2
                 BNE     FINISHSAVING
                 MOVE.L  D2,A2
-                BRA     DOFUNC2 
+                BRA     INPUT2 
                 
  
 FINISHSAVING
@@ -208,17 +204,16 @@ FINISHSAVING
                 CLR.L   D2
 ;by this point we have A3 holding destinationa and A2 holding origin. all data registers should be cleared at this point. the following address registers
 ;are not clear: A1, A2 (src), A3 (dest), A7 (stack pointer)
->>>>>>> Stashed changes
 
+;send assembly language to D2
+FEEDOPCODE
+                MOVE.W      (A2)+,D2
+                ;movem everything except D2, bcs u need it. 
+                MOVEM.L     D1/D3-D7/A1-A6,-(sp) 
+                BRA      OPCODETIME
 
-* Put program code here
-    SESARIO IMANPUTRA
-    MICAH RICE
-    ZACH  LIONG
-    SIMHALT             ; halt simulator
+OPCODETIME
 
-<<<<<<< Updated upstream
-=======
                 ;Do opcode and other things related stuff outside the NEXTIO branch. when you want the next machine language, enter the NEXTIO branch
                 
                 
@@ -236,21 +231,29 @@ END
     
 CR                  EQU     $0A
 LF                  EQU     $0D
-MESSAGEINPUT        DC.B    'Please enter first memory address: ',0
-MSGINPUT2           DC.B    'Please enter second memory address: ',0
+
+WELMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',CR,LF
+                    DC.B    'X                                                 X',CR,LF
+                    DC.B    'X   Welcome to the Disassembler of Motorola 68k   X',CR,LF
+                    DC.B    'X                                                 X',CR,LF
+                    DC.B    'X           By:    Sesario Imanputra              X',CR,LF
+                    DC.B    'X                  Zachary Liong                  X',CR,LF
+                    DC.B    'X                  Micah Rice                     X',CR,LF
+                    DC.B    'X                                                 X',CR,LF
+                    DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',CR,LF,CR,LF, 0
+LINE_COUNT          DS.B    1
+MSGINPUT            DC.B    'Please enter first memory address: ',0
+MSGINPUT2           DC.B    'Please enter second memory address:',0
 BADVALUE            DC.L    'INPUT VALUE EXCEEDS 32 BIT RANGE',CR,LF,0
 BADCHARACTER        DC.L    'INPUT HAS ILLEGAL CHARACTER',CR,LF,0
 MESSAGEOVERFLOW     DC.B    'END',0
 PLUSMSG             DC.B    '+',0
 NEGMSG              DC.B    '-',0
 CLR                 DC.B    CR,LF,0  
->>>>>>> Stashed changes
 * Put variables and constants here
-MSG DC.B    'Please input memory addresses:',0
+
     END    START        ; last line of source
-
-
-
+                
 
 
 

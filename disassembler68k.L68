@@ -1,10 +1,10 @@
 00004000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.16.01
-Created On: 7/21/2020 8:57:52 PM
+Created On: 7/21/2020 9:29:44 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      :  I/O
-00000000                             3  * Written by :  Sesario Imanputra
+00000000                             3  * Written by :  Sesario Imanputra, Zachary Liong, Micha Rice
 00000000                             4  * Date       :  
 00000000                             5  * Description: Starts at 4000. For testing purposes, theres a bunch of ML codes to disassemble at 4000. Currently, the first ML code at 4000 is NOP.
 00000000                             6  * afterwards, it will include ML of whatever we wrote after NOP.
@@ -15,231 +15,248 @@ Created On: 7/21/2020 8:57:52 PM
 00004000                            11  START:                  ; first instruction of program   
 00004000                            12  
 00004000                            13  ;inputs for testing are  here:
-00004000                            14  ****************************************************
-00004000  4E71                      15                  NOP
-00004002                            16  ****************************************************
-00004002                            17  DOFUNC
-00004002                            18                          ;had to specify or it wont work properly              
-00004002  43F9 000041AC             19                  LEA     MESSAGEINPUT ,A1     
-00004008  103C 000E                 20                  MOVE.B  #14,D0          
-0000400C  4E4F                      21                  TRAP    #15       
+00004000                            14  
+00004000                            15  ****************************************************
+00004000  4E71                      16                  NOP
+00004002                            17  ****************************************************
+00004002                            18        
+00004002  43F9 000041B8             19                  LEA     WELMSG,A1   ;Display intro message
+00004008  103C 000E                 20                  MOVE.B  #14,D0 
+0000400C  4E4F                      21                  TRAP    #15
 0000400E                            22                  
-0000400E  43F9 00009000             23                  LEA     $9000,A1
-00004014                            24                  
-00004014  303C 0002                 25                  MOVE.W  #2,D0           ;had to specify or it wont work properly
-00004018  4E4F                      26                  TRAP    #15    
-0000401A  6000 001E                 27                  BRA     FOR_LOOP 
-0000401E                            28                  
-0000401E  43F9 000041D0             29  DOFUNC2         LEA     MSGINPUT2,A1
-00004024  103C 000E                 30                  MOVE.B  #14,D0
-00004028  4E4F                      31                  TRAP    #15
-0000402A                            32                  
-0000402A  43F9 00009000             33                  LEA     $9000,A1
-00004030                            34                  
-00004030  303C 0002                 35                  MOVE.W  #2,D0
-00004034  4E4F                      36                  TRAP    #15
-00004036  6000 0002                 37                  BRA     FOR_LOOP
-0000403A                            38                                
-0000403A  B601                      39  FOR_LOOP        CMP.B   D1,D3
-0000403C  6700 00F0                 40                  BEQ     CHECKNEG
-00004040  4246                      41                  CLR.W   D6               
-00004042  DC19                      42                  ADD.B  (A1)+,D6
-00004044  BC3C 0030                 43                  CMP.B   #$30,D6
-00004048  6D00 00B2                 44                  BLT     BADINPUT
-0000404C  BC3C 0039                 45                  CMP.B   #$39,D6
-00004050  6E00 0024                 46                  BGT     CHECKINPUTAGAIN 
-00004054                            47  CONTLOOP
-00004054  4EB9 0000411C             48                  JSR     AtoH
-0000405A  0C03 0000                 49                  CMPI.B  #0,D3
-0000405E  6600 003E                 50                  BNE     OTHERVAL
-00004062  0C07 0000                 51                  CMPI.B  #0,D7   
-00004066  6D00 000A                 52                  BLT     SUBSTRACTVAL                 
-0000406A  D806                      53                  ADD.B   D6,D4 ;first value
-0000406C                            54  RETLOOP                
-0000406C  5243                      55                  ADD.W   #1,D3
-0000406E  60CA                      56                  BRA     FOR_LOOP
-00004070                            57                  
-00004070                            58  RETLOOPNEG                
-00004070                            59                  ;ADD.W   #1,D3
-00004070                            60                  ;ADD.W   #1,D7
-00004070  60C8                      61                  BRA     FOR_LOOP
-00004072                            62  
-00004072                            63  
-00004072                            64  SUBSTRACTVAL                 
-00004072  9846                      65                  SUB.W   D6,D4
-00004074  60F6                      66                  BRA     RETLOOP
-00004076                            67                  
-00004076                            68  CHECKINPUTAGAIN 
-00004076  BC3C 0046                 69                  CMP.B   #$46,D6
-0000407A  6E00 000C                 70                  BGT     LOWERCASE
-0000407E  BC3C 0041                 71                  CMP.B   #$41,D6
-00004082  6D00 0078                 72                  BLT     BADINPUT
-00004086  60CC                      73                  BRA     CONTLOOP
-00004088                            74                  
-00004088                            75  LOWERCASE
-00004088  BC3C 0061                 76                  CMP.B   #$61,D6
-0000408C  6D00 006E                 77                  BLT     BADINPUT
-00004090  BC3C 0066                 78                  CMP.B   #$66,D6
-00004094  6E00 0066                 79                  BGT     BADINPUT
-00004098  0406 0020                 80                  SUBI.B  #$20,D6
-0000409C  60B6                      81                  BRA     CONTLOOP
-0000409E                            82  
-0000409E                            83                  
-0000409E                            84  OTHERVAL
-0000409E  E984                      85                  ASL.L   #4,D4 ;u r overflowing, this is the last digit u can add
-000040A0  6900 0028                 86                  BVS     OVERFLOWINPUTCHECK ;u r overflowing, this is the last digit u can add
-000040A4  0C07 0000                 87                  CMPI.B  #0,D7
-000040A8  6600 0032                 88                  BNE     OVERFLOWINPUT
-000040AC  D846                      89                  ADD.W   D6,D4           
-000040AE  5243                      90                  ADD.W   #1,D3
-000040B0  6088                      91                  BRA     FOR_LOOP
-000040B2                            92                  
-000040B2                            93  SUBSTRACTVALOTHER
-000040B2  9846                      94                  SUB.W   D6,D4
-000040B4  6A00 0008                 95                  BPL     OVERFLOWDETECT  
-000040B8  5243                      96                  ADD.W   #1,D3
-000040BA  6000 FF7E                 97                  BRA     FOR_LOOP
-000040BE                            98    
-000040BE                            99  OVERFLOWDETECT
-000040BE  2A7C 00000001            100                  MOVE.L  #1,A5    
-000040C4  5243                     101                  ADD.W   #1,D3
-000040C6  6000 FF72                102                  BRA     FOR_LOOP
-000040CA                           103  
-000040CA                           104  OVERFLOWINPUTCHECK
-000040CA  0C07 0000                105                  CMPI.B  #0,D7
-000040CE  6600 000C                106                  BNE     OVERFLOWINPUT
-000040D2  5207                     107                  ADDI.B  #1,D7
-000040D4  D846                     108                  ADD.W   D6,D4                
-000040D6  5243                     109                  ADD.W   #1,D3
-000040D8  6000 FF60                110                  BRA     FOR_LOOP
-000040DC                           111  
-000040DC                           112  OVERFLOWINPUT                
-000040DC  43F9 000041F6            113                  LEA     BADVALUE,A1     
-000040E2  303C 000D                114                  MOVE.W  #13,D0          
-000040E6  4E4F                     115                  TRAP    #15 
-000040E8  4287                     116                  CLR.L   D7
-000040EA  4286                     117                  CLR.L   D6
-000040EC  4285                     118                  CLR.L   D5
-000040EE  4284                     119                  CLR.L   D4
-000040F0  4283                     120                  CLR.L   D3
-000040F2  4282                     121                  CLR.L   D2
-000040F4  4281                     122                  CLR.L   D1
-000040F6  4280                     123                  CLR.L   D0
-000040F8  6000 FF08                124                  BRA     DOFUNC   
-000040FC                           125  
-000040FC                           126  
-000040FC                           127  BADINPUT                
-000040FC  43F9 00004222            128                  LEA     BADCHARACTER,A1     
-00004102  303C 000D                129                  MOVE.W  #13,D0          
-00004106  4E4F                     130                  TRAP    #15 
-00004108  4287                     131                  CLR.L   D7
-0000410A  4286                     132                  CLR.L   D6
-0000410C  4285                     133                  CLR.L   D5
-0000410E  4284                     134                  CLR.L   D4
-00004110  4283                     135                  CLR.L   D3
-00004112  4282                     136                  CLR.L   D2
-00004114  4281                     137                  CLR.L   D1
-00004116  4280                     138                  CLR.L   D0
-00004118  6000 FEE8                139                  BRA     DOFUNC                   
-0000411C                           140              
-0000411C                           141  AtoH
-0000411C  0C06 0030                142                  CMPI.B  #$30,D6
-00004120  6D2A                     143                  BLT.B   ERR
-00004122  BC3C 0039                144                  CMP.B   #$39,D6
-00004126  6E32                     145                  BGT.B   ALPHA
-00004128  0406 0030                146                  SUBI.B  #$30,D6
-0000412C  4E75                     147                  RTS
-0000412E                           148                  
-0000412E                           149  CHECKNEG                
-0000412E  0C05 0001                150                  CMPI.B  #1,D5
-00004132  6D00 0002                151                  BLT     RESET
-00004136                           152                          
-00004136                           153  RESET
-00004136  4246                     154                  CLR.W   D6
-00004138  4245                     155                  CLR.W   D5
-0000413A  4243                     156                  CLR.W   D3
-0000413C  4247                     157                  CLR.W   D7
-0000413E  5242                     158                  ADD.W   #1,D2
-00004140  0C02 0002                159                  CMPI.B  #2,D2
-00004144  6700 0026                160                  BEQ     SAVESECOND
-00004148                           161                  ;MOVE.W  D4,(A4)+
-00004148  6000 0022                162                  BRA     SAVESECOND
-0000414C                           163                  
-0000414C                           164  ERR             
-0000414C  0C06 002D                165                  CMPI.B #$2D,D6
-00004150  6700 0004                166                  BEQ    NEGVALUE
-00004154  4E75                     167                  RTS
-00004156                           168                  
-00004156                           169  NEGVALUE
-00004156  5245                     170                  ADD.W   #1,D5
-00004158  4E75                     171                  RTS
-0000415A                           172  
-0000415A                           173                  
-0000415A                           174  ALPHA
-0000415A  0C06 0041                175                  CMPI.B #$41,D6
-0000415E  6DEC                     176                  BLT.B  ERR
-00004160  0C06 0046                177                  CMPI.B #$46,D6
-00004164  6EE6                     178                  BGT.B  ERR
-00004166  0406 0037                179                  SUBI.B #$37,D6
-0000416A  4E75                     180                  RTS
-0000416C                           181                  
-0000416C                           182  SAVESECOND
-0000416C  4241                     183                  CLR.W   D1
-0000416E  4243                     184                  CLR.W   D3
-00004170  2404                     185                  MOVE.L  D4,D2
-00004172  4284                     186                  CLR.L   D4
-00004174  4240                     187                  CLR.W   D0
-00004176                           188                  ;CLR.W   D4
-00004176  4246                     189                  CLR.W   D6
-00004178  B5FC 00000000            190                  CMP.L   #$0,A2
-0000417E  6600 0008                191                  BNE     FINISHSAVING
-00004182  2442                     192                  MOVE.L  D2,A2
-00004184  6000 FE98                193                  BRA     DOFUNC2 
-00004188                           194                  
-00004188                           195   
-00004188                           196  FINISHSAVING
-00004188  2642                     197                  MOVE.L  D2,A3
-0000418A  4282                     198                  CLR.L   D2
-0000418C                           199  ;by this point we have A3 holding destinationa and A2 holding origin. all data registers should be cleared at this point. the following address registers
-0000418C                           200  ;are not clear: A1, A2 (src), A3 (dest), A7 (stack pointer)
-0000418C                           201  
-0000418C                           202  ;send assembly language to D2
-0000418C                           203  FEEDOPCODE
-0000418C  341A                     204                  MOVE.W      (A2)+,D2
-0000418E                           205                  ;movem everything except D2, bcs u need it. 
-0000418E  48E7 5F7E                206                  MOVEM.L     D1/D3-D7/A1-A6,-(sp) 
-00004192  6000 0002                207                  BRA      OPCODETIME
-00004196                           208  
-00004196                           209  OPCODETIME
-00004196                           210  
-00004196                           211                  ;Do opcode and other things related stuff outside the NEXTIO branch. when you want the next machine language, enter the NEXTIO branch
-00004196                           212                  
-00004196                           213                  
-00004196                           214                  ******************************************************************************************************************
-00004196                           215  NEXTIO                
-00004196  4CDF 7EFA                216                  MOVEM.L  (sp)+,D1/D3-D7/A1-A6 ;I/O gets his stuff back
-0000419A  B7CA                     217                  CMP.L    A2,A3  ;we dont need more machine language once we have reached the the destination
-0000419C  6700 0004                218                  BEQ      END ;so when equal, we are done
-000041A0  60EA                     219                  BRA FEEDOPCODE
+0000400E                            23  
+0000400E                            24  INPUT1                                   
+0000400E  43F9 00004399             25                  LEA     MSGINPUT ,A1     ;Ask for first input
+00004014  103C 000E                 26                  MOVE.B  #14,D0          
+00004018  4E4F                      27                  TRAP    #15       
+0000401A                            28                  
+0000401A  43F9 00009000             29                  LEA     $9000,A1
+00004020                            30                  
+00004020  303C 0002                 31                  MOVE.W  #2,D0           ;had to specify or it wont work properly
+00004024  4E4F                      32                  TRAP    #15    
+00004026  6000 001E                 33                  BRA     FOR_LOOP 
+0000402A                            34                  
+0000402A  43F9 000043BD             35  INPUT2          LEA     MSGINPUT2,A1    ;Ask for second input
+00004030  103C 000E                 36                  MOVE.B  #14,D0
+00004034  4E4F                      37                  TRAP    #15
+00004036                            38                  
+00004036  43F9 00009000             39                  LEA     $9000,A1
+0000403C                            40                  
+0000403C  303C 0002                 41                  MOVE.W  #2,D0
+00004040  4E4F                      42                  TRAP    #15
+00004042  6000 0002                 43                  BRA     FOR_LOOP
+00004046                            44                                
+00004046  B601                      45  FOR_LOOP        CMP.B   D1,D3
+00004048  6700 00F0                 46                  BEQ     CHECKNEG
+0000404C  4246                      47                  CLR.W   D6               
+0000404E  DC19                      48                  ADD.B  (A1)+,D6
+00004050  BC3C 0030                 49                  CMP.B   #$30,D6
+00004054  6D00 00B2                 50                  BLT     BADINPUT
+00004058  BC3C 0039                 51                  CMP.B   #$39,D6
+0000405C  6E00 0024                 52                  BGT     CHECKINPUTAGAIN 
+00004060                            53  CONTLOOP
+00004060  4EB9 00004128             54                  JSR     AtoH
+00004066  0C03 0000                 55                  CMPI.B  #0,D3
+0000406A  6600 003E                 56                  BNE     OTHERVAL
+0000406E  0C07 0000                 57                  CMPI.B  #0,D7   
+00004072  6D00 000A                 58                  BLT     SUBSTRACTVAL                 
+00004076  D806                      59                  ADD.B   D6,D4 ;first value
+00004078                            60  RETLOOP                
+00004078  5243                      61                  ADD.W   #1,D3
+0000407A  60CA                      62                  BRA     FOR_LOOP
+0000407C                            63                  
+0000407C                            64  RETLOOPNEG                
+0000407C                            65                  ;ADD.W   #1,D3
+0000407C                            66                  ;ADD.W   #1,D7
+0000407C  60C8                      67                  BRA     FOR_LOOP
+0000407E                            68  
+0000407E                            69  
+0000407E                            70  SUBSTRACTVAL                 
+0000407E  9846                      71                  SUB.W   D6,D4
+00004080  60F6                      72                  BRA     RETLOOP
+00004082                            73                  
+00004082                            74  CHECKINPUTAGAIN 
+00004082  BC3C 0046                 75                  CMP.B   #$46,D6
+00004086  6E00 000C                 76                  BGT     LOWERCASE
+0000408A  BC3C 0041                 77                  CMP.B   #$41,D6
+0000408E  6D00 0078                 78                  BLT     BADINPUT
+00004092  60CC                      79                  BRA     CONTLOOP
+00004094                            80                  
+00004094                            81  LOWERCASE
+00004094  BC3C 0061                 82                  CMP.B   #$61,D6
+00004098  6D00 006E                 83                  BLT     BADINPUT
+0000409C  BC3C 0066                 84                  CMP.B   #$66,D6
+000040A0  6E00 0066                 85                  BGT     BADINPUT
+000040A4  0406 0020                 86                  SUBI.B  #$20,D6
+000040A8  60B6                      87                  BRA     CONTLOOP
+000040AA                            88  
+000040AA                            89                  
+000040AA                            90  OTHERVAL
+000040AA  E984                      91                  ASL.L   #4,D4 ;u r overflowing, this is the last digit u can add
+000040AC  6900 0028                 92                  BVS     OVERFLOWINPUTCHECK ;u r overflowing, this is the last digit u can add
+000040B0  0C07 0000                 93                  CMPI.B  #0,D7
+000040B4  6600 0032                 94                  BNE     OVERFLOWINPUT
+000040B8  D846                      95                  ADD.W   D6,D4           
+000040BA  5243                      96                  ADD.W   #1,D3
+000040BC  6088                      97                  BRA     FOR_LOOP
+000040BE                            98                  
+000040BE                            99  SUBSTRACTVALOTHER
+000040BE  9846                     100                  SUB.W   D6,D4
+000040C0  6A00 0008                101                  BPL     OVERFLOWDETECT  
+000040C4  5243                     102                  ADD.W   #1,D3
+000040C6  6000 FF7E                103                  BRA     FOR_LOOP
+000040CA                           104    
+000040CA                           105  OVERFLOWDETECT
+000040CA  2A7C 00000001            106                  MOVE.L  #1,A5    
+000040D0  5243                     107                  ADD.W   #1,D3
+000040D2  6000 FF72                108                  BRA     FOR_LOOP
+000040D6                           109  
+000040D6                           110  OVERFLOWINPUTCHECK
+000040D6  0C07 0000                111                  CMPI.B  #0,D7
+000040DA  6600 000C                112                  BNE     OVERFLOWINPUT
+000040DE  5207                     113                  ADDI.B  #1,D7
+000040E0  D846                     114                  ADD.W   D6,D4                
+000040E2  5243                     115                  ADD.W   #1,D3
+000040E4  6000 FF60                116                  BRA     FOR_LOOP
+000040E8                           117  
+000040E8                           118  OVERFLOWINPUT                
+000040E8  43F9 000043E2            119                  LEA     BADVALUE,A1     
+000040EE  303C 000D                120                  MOVE.W  #13,D0          
+000040F2  4E4F                     121                  TRAP    #15 
+000040F4  4287                     122                  CLR.L   D7
+000040F6  4286                     123                  CLR.L   D6
+000040F8  4285                     124                  CLR.L   D5
+000040FA  4284                     125                  CLR.L   D4
+000040FC  4283                     126                  CLR.L   D3
+000040FE  4282                     127                  CLR.L   D2
+00004100  4281                     128                  CLR.L   D1
+00004102  4280                     129                  CLR.L   D0
+00004104  6000 FF08                130                  BRA     INPUT1   
+00004108                           131  
+00004108                           132  
+00004108                           133  BADINPUT                
+00004108  43F9 0000440E            134                  LEA     BADCHARACTER,A1     
+0000410E  303C 000D                135                  MOVE.W  #13,D0          
+00004112  4E4F                     136                  TRAP    #15 
+00004114  4287                     137                  CLR.L   D7
+00004116  4286                     138                  CLR.L   D6
+00004118  4285                     139                  CLR.L   D5
+0000411A  4284                     140                  CLR.L   D4
+0000411C  4283                     141                  CLR.L   D3
+0000411E  4282                     142                  CLR.L   D2
+00004120  4281                     143                  CLR.L   D1
+00004122  4280                     144                  CLR.L   D0
+00004124  6000 FEE8                145                  BRA     INPUT1                   
+00004128                           146              
+00004128                           147  AtoH
+00004128  0C06 0030                148                  CMPI.B  #$30,D6
+0000412C  6D2A                     149                  BLT.B   ERR
+0000412E  BC3C 0039                150                  CMP.B   #$39,D6
+00004132  6E32                     151                  BGT.B   ALPHA
+00004134  0406 0030                152                  SUBI.B  #$30,D6
+00004138  4E75                     153                  RTS
+0000413A                           154                  
+0000413A                           155  CHECKNEG                
+0000413A  0C05 0001                156                  CMPI.B  #1,D5
+0000413E  6D00 0002                157                  BLT     RESET
+00004142                           158                          
+00004142                           159  RESET
+00004142  4246                     160                  CLR.W   D6
+00004144  4245                     161                  CLR.W   D5
+00004146  4243                     162                  CLR.W   D3
+00004148  4247                     163                  CLR.W   D7
+0000414A  5242                     164                  ADD.W   #1,D2
+0000414C  0C02 0002                165                  CMPI.B  #2,D2
+00004150  6700 0026                166                  BEQ     SAVESECOND
+00004154                           167                  ;MOVE.W  D4,(A4)+
+00004154  6000 0022                168                  BRA     SAVESECOND
+00004158                           169                  
+00004158                           170  ERR             
+00004158  0C06 002D                171                  CMPI.B #$2D,D6
+0000415C  6700 0004                172                  BEQ    NEGVALUE
+00004160  4E75                     173                  RTS
+00004162                           174                  
+00004162                           175  NEGVALUE
+00004162  5245                     176                  ADD.W   #1,D5
+00004164  4E75                     177                  RTS
+00004166                           178  
+00004166                           179                  
+00004166                           180  ALPHA
+00004166  0C06 0041                181                  CMPI.B #$41,D6
+0000416A  6DEC                     182                  BLT.B  ERR
+0000416C  0C06 0046                183                  CMPI.B #$46,D6
+00004170  6EE6                     184                  BGT.B  ERR
+00004172  0406 0037                185                  SUBI.B #$37,D6
+00004176  4E75                     186                  RTS
+00004178                           187                  
+00004178                           188  SAVESECOND
+00004178  4241                     189                  CLR.W   D1
+0000417A  4243                     190                  CLR.W   D3
+0000417C  2404                     191                  MOVE.L  D4,D2
+0000417E  4284                     192                  CLR.L   D4
+00004180  4240                     193                  CLR.W   D0
+00004182                           194                  ;CLR.W   D4
+00004182  4246                     195                  CLR.W   D6
+00004184  B5FC 00000000            196                  CMP.L   #$0,A2
+0000418A  6600 0008                197                  BNE     FINISHSAVING
+0000418E  2442                     198                  MOVE.L  D2,A2
+00004190  6000 FE98                199                  BRA     INPUT2 
+00004194                           200                  
+00004194                           201   
+00004194                           202  FINISHSAVING
+00004194  2642                     203                  MOVE.L  D2,A3
+00004196  4282                     204                  CLR.L   D2
+00004198                           205  ;by this point we have A3 holding destinationa and A2 holding origin. all data registers should be cleared at this point. the following address registers
+00004198                           206  ;are not clear: A1, A2 (src), A3 (dest), A7 (stack pointer)
+00004198                           207  
+00004198                           208  ;send assembly language to D2
+00004198                           209  FEEDOPCODE
+00004198  341A                     210                  MOVE.W      (A2)+,D2
+0000419A                           211                  ;movem everything except D2, bcs u need it. 
+0000419A  48E7 5F7E                212                  MOVEM.L     D1/D3-D7/A1-A6,-(sp) 
+0000419E  6000 0002                213                  BRA      OPCODETIME
+000041A2                           214  
+000041A2                           215  OPCODETIME
+000041A2                           216  
+000041A2                           217                  ;Do opcode and other things related stuff outside the NEXTIO branch. when you want the next machine language, enter the NEXTIO branch
+000041A2                           218                  
+000041A2                           219                  
 000041A2                           220                  ******************************************************************************************************************
-000041A2                           221  END    
-000041A2  303C 0009                222                  MOVE.W  #9,D0          
-000041A6  4E4F                     223                  TRAP    #15                             
-000041A8  FFFF FFFF                224                  SIMHALT             ; halt simulator
-000041AC                           225      
-000041AC  =0000000A                226  CR                  EQU     $0A
-000041AC  =0000000D                227  LF                  EQU     $0D
-000041AC= 50 6C 65 61 73 65 ...    228  MESSAGEINPUT        DC.B    'Please enter first memory address: ',0
-000041D0= 50 6C 65 61 73 65 ...    229  MSGINPUT2           DC.B    'Please enter second memory address: ',0
-000041F6= 494E5055 54205641 ...    230  BADVALUE            DC.L    'INPUT VALUE EXCEEDS 32 BIT RANGE',CR,LF,0
-00004222= 494E5055 54204841 ...    231  BADCHARACTER        DC.L    'INPUT HAS ILLEGAL CHARACTER',CR,LF,0
-0000424A= 45 4E 44 00              232  MESSAGEOVERFLOW     DC.B    'END',0
-0000424E= 2B 00                    233  PLUSMSG             DC.B    '+',0
-00004250= 2D 00                    234  NEGMSG              DC.B    '-',0
-00004252= 0A 0D 00                 235  CLR                 DC.B    CR,LF,0  
-00004255                           236  * Put variables and constants here
-00004255                           237  
-00004255                           238      END    START        ; last line of source
+000041A2                           221  NEXTIO                
+000041A2  4CDF 7EFA                222                  MOVEM.L  (sp)+,D1/D3-D7/A1-A6 ;I/O gets his stuff back
+000041A6  B7CA                     223                  CMP.L    A2,A3  ;we dont need more machine language once we have reached the the destination
+000041A8  6700 0004                224                  BEQ      END ;so when equal, we are done
+000041AC  60EA                     225                  BRA FEEDOPCODE
+000041AE                           226                  ******************************************************************************************************************
+000041AE                           227  END    
+000041AE  303C 0009                228                  MOVE.W  #9,D0          
+000041B2  4E4F                     229                  TRAP    #15                             
+000041B4  FFFF FFFF                230                  SIMHALT             ; halt simulator
+000041B8                           231      
+000041B8  =0000000A                232  CR                  EQU     $0A
+000041B8  =0000000D                233  LF                  EQU     $0D
+000041B8                           234  
+000041B8= 58 58 58 58 58 58 ...    235  WELMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',CR,LF
+000041ED= 58 20 20 20 20 20 ...    236                      DC.B    'X                                                 X',CR,LF
+00004222= 58 20 20 20 57 65 ...    237                      DC.B    'X   Welcome to the Disassembler of Motorola 68k   X',CR,LF
+00004257= 58 20 20 20 20 20 ...    238                      DC.B    'X                                                 X',CR,LF
+0000428C= 58 20 20 20 20 20 ...    239                      DC.B    'X           By:    Sesario Imanputra              X',CR,LF
+000042C1= 58 20 20 20 20 20 ...    240                      DC.B    'X                  Zachary Liong                  X',CR,LF
+000042F6= 58 20 20 20 20 20 ...    241                      DC.B    'X                  Micah Rice                     X',CR,LF
+0000432B= 58 20 20 20 20 20 ...    242                      DC.B    'X                                                 X',CR,LF
+00004360= 58 58 58 58 58 58 ...    243                      DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',CR,LF,CR,LF, 0
+00004398                           244  LINE_COUNT          DS.B    1
+00004399= 50 6C 65 61 73 65 ...    245  MSGINPUT            DC.B    'Please enter first memory address: ',0
+000043BD= 50 6C 65 61 73 65 ...    246  MSGINPUT2           DC.B    'Please enter second memory address:',0
+000043E2= 494E5055 54205641 ...    247  BADVALUE            DC.L    'INPUT VALUE EXCEEDS 32 BIT RANGE',CR,LF,0
+0000440E= 494E5055 54204841 ...    248  BADCHARACTER        DC.L    'INPUT HAS ILLEGAL CHARACTER',CR,LF,0
+00004436= 45 4E 44 00              249  MESSAGEOVERFLOW     DC.B    'END',0
+0000443A= 2B 00                    250  PLUSMSG             DC.B    '+',0
+0000443C= 2D 00                    251  NEGMSG              DC.B    '-',0
+0000443E= 0A 0D 00                 252  CLR                 DC.B    CR,LF,0  
+00004441                           253  * Put variables and constants here
+00004441                           254  
+00004441                           255      END    START        ; last line of source
 
 No errors detected
 No warnings generated
@@ -248,41 +265,43 @@ No warnings generated
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-ALPHA               415A
-ATOH                411C
-BADCHARACTER        4222
-BADINPUT            40FC
-BADVALUE            41F6
-CHECKINPUTAGAIN     4076
-CHECKNEG            412E
-CLR                 4252
-CONTLOOP            4054
+ALPHA               4166
+ATOH                4128
+BADCHARACTER        440E
+BADINPUT            4108
+BADVALUE            43E2
+CHECKINPUTAGAIN     4082
+CHECKNEG            413A
+CLR                 443E
+CONTLOOP            4060
 CR                  A
-DOFUNC              4002
-DOFUNC2             401E
-END                 41A2
-ERR                 414C
-FEEDOPCODE          418C
-FINISHSAVING        4188
-FOR_LOOP            403A
+END                 41AE
+ERR                 4158
+FEEDOPCODE          4198
+FINISHSAVING        4194
+FOR_LOOP            4046
+INPUT1              400E
+INPUT2              402A
 LF                  D
-LOWERCASE           4088
-MESSAGEINPUT        41AC
-MESSAGEOVERFLOW     424A
-MSGINPUT2           41D0
-NEGMSG              4250
-NEGVALUE            4156
-NEXTIO              4196
-OPCODETIME          4196
-OTHERVAL            409E
-OVERFLOWDETECT      40BE
-OVERFLOWINPUT       40DC
-OVERFLOWINPUTCHECK  40CA
-PLUSMSG             424E
-RESET               4136
-RETLOOP             406C
-RETLOOPNEG          4070
-SAVESECOND          416C
+LINE_COUNT          4398
+LOWERCASE           4094
+MESSAGEOVERFLOW     4436
+MSGINPUT            4399
+MSGINPUT2           43BD
+NEGMSG              443C
+NEGVALUE            4162
+NEXTIO              41A2
+OPCODETIME          41A2
+OTHERVAL            40AA
+OVERFLOWDETECT      40CA
+OVERFLOWINPUT       40E8
+OVERFLOWINPUTCHECK  40D6
+PLUSMSG             443A
+RESET               4142
+RETLOOP             4078
+RETLOOPNEG          407C
+SAVESECOND          4178
 START               4000
-SUBSTRACTVAL        4072
-SUBSTRACTVALOTHER   40B2
+SUBSTRACTVAL        407E
+SUBSTRACTVALOTHER   40BE
+WELMSG              41B8
