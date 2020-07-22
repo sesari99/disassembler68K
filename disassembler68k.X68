@@ -129,7 +129,6 @@ OVERFLOWINPUT
                 CLR.L   D0
                 BRA     INPUT1   
 
-
 BADINPUT                
                 LEA     BADCHARACTER,A1     
                 MOVE.W  #13,D0          
@@ -142,7 +141,7 @@ BADINPUT
                 CLR.L   D2
                 CLR.L   D1
                 CLR.L   D0
-                BRA     INPUT1                   
+                BRA     INPUT1                                    
             
 AtoH
                 CMPI.B  #$30,D6
@@ -175,6 +174,7 @@ ERR
 NEGVALUE
                 ADD.W   #1,D5
                 RTS
+
 
                 
 ALPHA
@@ -243,7 +243,7 @@ WELMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                     DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',CR,LF,CR,LF, 0
 LINE_COUNT          DS.B    1
 MSGINPUT            DC.B    'Please enter first memory address: ',0
-MSGINPUT2           DC.B    'Please enter second memory address:',0
+MSGINPUT2           DC.B    'Please enter second memory address: ',0
 BADVALUE            DC.L    'INPUT VALUE EXCEEDS 32 BIT RANGE',CR,LF,0
 BADCHARACTER        DC.L    'INPUT HAS ILLEGAL CHARACTER',CR,LF,0
 MESSAGEOVERFLOW     DC.B    'END',0
@@ -253,8 +253,6 @@ CLR                 DC.B    CR,LF,0
 * Put variables and constants here
 
     END    START        ; last line of source
-                
-
 
 
 *~Font name~Courier New~
