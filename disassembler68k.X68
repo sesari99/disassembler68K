@@ -255,11 +255,80 @@ FEEDOPCODE
                 ;movem everything except D2, bcs u need it. 
                 ADDI.W      #1,D1
                 MOVEM.L     D1/D3-D7/A1-A6,-(sp) 
-                BRA      OPCODETIME
+                BRA         OPCODETIME
 
-OPCODETIME
+OPCODETIME      MOVE.L      #0000000,D3           ;MOVE OPCODE HEX TO PLAYTIME MEMORY
 
+                CMP         #$4E71,D3        ;SPECIAL CASE FOR NOOP
+                BEQ         NOOPBRANCH
+                CMP         #$4E75,D3        ;SPECIAL CASE FOR RTS
+                BEQ         RTSBRANCH
+                
+                LSR.L       #8,D3           ;EDIT OPCODE HEX TO JUST INCLUDE PREFIX
+                LSR.L       #8,D3           ;KEEP EDITING TO INCLUDE ONLY PREFIX
+                LEA         OPJUMPTABLE,A1
+                JSR         0(A1,D3)        
+
+NOOPBRANCH      LEA     NOOPMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO
+
+RTSBRANCH       LEA     RTSMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO
+                
                 ;Do opcode and other things related stuff outside the NEXTIO branch. when you want the next machine language, enter the NEXTIO branch
+;REQUIREMENT: NEED TO KNOW FIRST FOUR BITS OF MEMORY ADDRESS BEING EXAMINED                
+OPJUMPTABLE
+		JSR     OPCODE0000           INVALID
+    	RTS
+*    	JSR     OPCODE0001           INTERPRET AS MOVE.B PROVISIONALLY
+*    	RTS
+*    	JSR     OPCODE0010           INTERPRET AS MOVE.L PROVISIONALLY
+*    	RTS
+*    	JSR     OPCODE0011           INTERPRET AS MOVE.W PROVISIONALLY
+*	    RTS
+*	    JSR     OPCODE0100           EXAMINE NEXT FOUR BITS, COULD BE MOVEM, LEA, NOT, OR JSR
+*	    RTS
+*	    JSR     OPCODE0101           INVALID
+*	    RTS
+*	    JSR     OPCODE0110           BCC OR BRA PROVISIONALLY
+*	    RTS
+*	    JSR     OPCODE0111           INVALID
+*	    RTS
+*	    JSR     OPCODE1000           TREAT AS DIVU PROVISIONALLY, EXAMINE EA
+*	    RTS
+*	    JSR     OPCODE1001           TREAT AS SUBTRACT
+*	    RTS
+*	    JSR     OPCODE1010           INVALID
+*	    RTS
+*	    JSR     OPCODE1011           INVALID
+*	    RTS
+*	    JSR     OPCODE1100           EXAMINE NEXT FOUR BITS, COULD BE MULS OR AND
+*	    RTS
+*	    JSR     OPCODE1101           TREAT AS ADDD PROVISIONALLY
+*	    RTS
+*	    JSR     OPCODE1110           EXAMINE NEXT FOUR BITS, COULD BE ASL OR LSL
+*	    RTS
+*	    JSR     OPCODE1111           INVALID
+*	    RTS                
+                
+OPCODE0000 ;PROVISIONAL INVALID MESSAGE
+        LEA     INVALIDMSG,A1
+        MOVE.B  #14,D0
+        TRAP    #15
+        BRA     NEXTIO
+                        
+                
+      
+                
+                
+                
+                
+                
+                
                 
                 
                 ******************************************************************************************************************
@@ -332,7 +401,13 @@ NEWPAGEMSG          DC.L    'Continue? (Y | N): ',CR,LF,0
 ENDMSG              DC.B    'END',0
 PLUSMSG             DC.B    '+',0
 NEGMSG              DC.B    '-',0
-CLR                 DC.B    CR,LF,0  
+CLR                 DC.B    CR,LF,0
+NOOPMSG             DC.B    'NOOP SPECIALCASE',CR,LF,0
+RTSMSG              DC.B    'RTS SPECIALCASE',CR,LF,0
+INVALIDMSG          DC.B    'INVALID PROVISIONAL MESSAGE!',CR,LF,0
 * Put variables and constants here
 
     END    START        ; last line of source
+
+
+
