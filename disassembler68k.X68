@@ -110,8 +110,14 @@ OVERFLOWINPUT
                 CLR.L   D2
                 CLR.L   D1
                 CLR.L   D0
+<<<<<<< Updated upstream
                 BRA     DOFUNC   
 
+=======
+                CMP.L   #$0,A2
+                BEQ     INPUT1 
+                BRA     INPUT2    
+>>>>>>> Stashed changes
 
 BADINPUT                
                 LEA     BADCHARACTER,A1     
@@ -125,7 +131,13 @@ BADINPUT
                 CLR.L   D2
                 CLR.L   D1
                 CLR.L   D0
+<<<<<<< Updated upstream
                 BRA     DOFUNC                   
+=======
+                CMP.L   #$0,A2
+                BEQ     INPUT1 
+                BRA     INPUT2                                 
+>>>>>>> Stashed changes
             
 AtoH
                 CMPI.B  #$30,D6
@@ -167,8 +179,15 @@ INVALIDLOWVALUE
                 CLR.L   D2
                 CLR.L   D1
                 CLR.L   D0
+<<<<<<< Updated upstream
                 BRA     DOFUNC
                                 
+=======
+                CMP.L   #$0,A2
+                BEQ     INPUT1 
+                BRA     INPUT2             
+                
+>>>>>>> Stashed changes
                 
 ERR             
                 CMPI.B #$2D,D6
@@ -215,9 +234,15 @@ BADADDRESSORDER
                 CLR.L   D0
                 MOVE.L  #$0,A2
                 MOVE.L  #$0,A3
+<<<<<<< Updated upstream
                 BRA     DOFUNC    
                                 
 
+=======
+                BEQ     INPUT1            
+                
+ 
+>>>>>>> Stashed changes
 FINISHSAVING
                 MOVE.L  D2,A3
                 CLR.L   D2
@@ -242,8 +267,13 @@ OPCODETIME
                 ******************************************************************************************************************
 NEXTIO                
                 MOVEM.L  (sp)+,D1/D3-D7/A1-A6 ;I/O gets his stuff back
+<<<<<<< Updated upstream
                 CMP.L    A2,A3  ;we dont need more machine language once we have reached the the destination
                 BEQ      END ;so when equal, we are done
+=======
+                CMP.L    A3,A2  ;we dont need more machine language once we have reached the the destination
+                BGT      END ;so when equal, we are done
+>>>>>>> Stashed changes
                 CMP.L    #1000,D1       ;hardcoded limit for a page. can be and expected to change
                 BNE      FEEDOPCODE
                 ;check if user wants new page. if no exit. if yes continue to feedopcode.
@@ -274,23 +304,52 @@ NEWPAGELOOP
                 MOVE.W  #13,D0          
                 TRAP    #15
                 
+<<<<<<< Updated upstream
                 BRA     NEWPAGELOOP                    
                 
+=======
+                BRA     NEWPAGELOOP  
+>>>>>>> Stashed changes
                 ******************************************************************************************************************
-END    
+END 
+                LEA     ENDMSG,A1     
+                MOVE.W  #13,D0          
+                TRAP    #15  
+ 
                 MOVE.W  #9,D0          
                 TRAP    #15                             
                 SIMHALT             ; halt simulator
     
 CR                  EQU     $0A
 LF                  EQU     $0D
+<<<<<<< Updated upstream
 MESSAGEINPUT        DC.B    'Please enter 32-bit hexadecimal value: $',0
+=======
+
+WELMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',CR,LF
+                    DC.B    'X                                                 X',CR,LF
+                    DC.B    'X   Welcome to the Disassembler of Motorola 68k   X',CR,LF
+                    DC.B    'X                                                 X',CR,LF
+                    DC.B    'X           By:    Sesario Imanputra              X',CR,LF
+                    DC.B    'X                  Zachary Liong                  X',CR,LF
+                    DC.B    'X                  Micah Rice                     X',CR,LF
+                    DC.B    'X                                                 X',CR,LF
+                    DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',CR,LF,CR,LF, 0
+LINE_COUNT          DS.B    1
+
+MSGINPUT            DC.B    'Please enter first memory address: $',0
+MSGINPUT2           DC.B    'Please enter second memory address: $',0
+>>>>>>> Stashed changes
 BADVALUE            DC.L    'INPUT VALUE EXCEEDS 32 BIT RANGE',CR,LF,0
 BADCHARACTER        DC.L    'INPUT HAS ILLEGAL CHARACTER',CR,LF,0
 BADADDRESS          DC.L    'SOURCE ADDRESS CANNOT BE BIGGER THEN DESTINATION ADDRESS',CR,LF,0
 VALUETOOLOW         DC.L    'VALUE TOO LOW',CR,LF,0
 NEWPAGEMSG          DC.L    'Continue? (Y | N): ',CR,LF,0
+<<<<<<< Updated upstream
 MESSAGEOVERFLOW     DC.B    'END',0
+=======
+ENDMSG              DC.B    'END',0
+>>>>>>> Stashed changes
 PLUSMSG             DC.B    '+',0
 NEGMSG              DC.B    '-',0
 CLR                 DC.B    CR,LF,0  
@@ -298,6 +357,7 @@ CLR                 DC.B    CR,LF,0
 
     END    START        ; last line of source
                 
+
 
 
 
