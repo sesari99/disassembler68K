@@ -127,7 +127,9 @@ OVERFLOWINPUT
                 CLR.L   D2
                 CLR.L   D1
                 CLR.L   D0
-                BRA     INPUT1   
+                CMP.L   #$0,A2
+                BEQ     INPUT1 
+                BRA     INPUT2    
 
 BADINPUT                
                 LEA     BADCHARACTER,A1     
@@ -141,7 +143,9 @@ BADINPUT
                 CLR.L   D2
                 CLR.L   D1
                 CLR.L   D0
-                BRA     INPUT1                                    
+                CMP.L   #$0,A2
+                BEQ     INPUT1 
+                BRA     INPUT2                                 
             
 AtoH
                 CMPI.B  #$30,D6
@@ -160,11 +164,33 @@ RESET
                 CLR.W   D5
                 CLR.W   D3
                 CLR.W   D7
+                
+                CMPI    #0,D4
+                BEQ     INVALIDLOWVALUE 
+                
                 ADD.W   #1,D2
+                CMPI.B  #0,D2
                 CMPI.B  #2,D2
                 BEQ     SAVESECOND
                 ;MOVE.W  D4,(A4)+
                 BRA     SAVESECOND
+                
+INVALIDLOWVALUE 
+                LEA     VALUETOOLOW,A1     
+                MOVE.W  #13,D0          
+                TRAP    #15 
+                CLR.L   D7
+                CLR.L   D6
+                CLR.L   D5
+                CLR.L   D4
+                CLR.L   D3
+                CLR.L   D2
+                CLR.L   D1
+                CLR.L   D0
+                CMP.L   #$0,A2
+                BEQ     INPUT1 
+                BRA     INPUT2             
+                
                 
 ERR             
                 CMPI.B #$2D,D6
@@ -198,10 +224,26 @@ SAVESECOND
                 MOVE.L  D2,A2
                 BRA     INPUT2 
                 
+                LEA     BADADDRESS,A1     
+                MOVE.W  #13,D0          
+                TRAP    #15 
+                CLR.L   D7
+                CLR.L   D6
+                CLR.L   D5
+                CLR.L   D4
+                CLR.L   D3
+                CLR.L   D2
+                CLR.L   D1
+                CLR.L   D0
+                MOVE.L  #$0,A2
+                MOVE.L  #$0,A3
+                BEQ     INPUT1            
  
 FINISHSAVING
                 MOVE.L  D2,A3
                 CLR.L   D2
+                CMP.L   A3, A2 ;A2 > A3, then an error should appear
+                BGT     BADADDRESSORDER
 ;by this point we have A3 holding destinationa and A2 holding origin. all data registers should be cleared at this point. the following address registers
 ;are not clear: A1, A2 (src), A3 (dest), A7 (stack pointer)
 
@@ -209,6 +251,7 @@ FINISHSAVING
 FEEDOPCODE
                 MOVE.W      (A2)+,D2
                 ;movem everything except D2, bcs u need it. 
+                ADDI.W      #1,D1
                 MOVEM.L     D1/D3-D7/A1-A6,-(sp) 
                 BRA      OPCODETIME
 
@@ -220,11 +263,45 @@ OPCODETIME
                 ******************************************************************************************************************
 NEXTIO                
                 MOVEM.L  (sp)+,D1/D3-D7/A1-A6 ;I/O gets his stuff back
-                CMP.L    A2,A3  ;we dont need more machine language once we have reached the the destination
-                BEQ      END ;so when equal, we are done
-                BRA FEEDOPCODE
+                CMP.L    A3,A2  ;we dont need more machine language once we have reached the the destination
+                BGT      END ;so when equal, we are done
+                CMP.L    #1000,D1       ;hardcoded limit for a page. can be and expected to change
+                BNE      FEEDOPCODE
+                ;check if user wants new page. if no exit. if yes continue to feedopcode.
+NEWPAGELOOP
+                LEA     $9000,A1          ;had to specify or it wont work properly                 
+                LEA     NEWPAGEMSG,A1     
+                MOVE.W  #14,D0          
+                TRAP    #15 
+                
+                LEA     $9000,A1          ;had to specify or it wont work properly                 
+                MOVE.W  #2,D0           ;had to specify or it wont work properly
+                TRAP    #15  
+                
+                MOVE.B  (A1),D3
+                
+                LEA     $9000,A1          ;had to specify or it wont work properly
+                CMP.B   #$59,D3
+                BEQ     FEEDOPCODE
+                CMP.B   #$79,D3
+                BEQ     FEEDOPCODE
+                CMP.B   #$4E,D3
+                BEQ     END
+                CMP.B   #$6E,D3
+                BEQ     END
+                
+                LEA     $9000,A1          ;had to specify or it wont work properly
+                LEA     BADCHARACTER,A1     
+                MOVE.W  #13,D0          
+                TRAP    #15
+                
+                BRA     NEWPAGELOOP  
                 ******************************************************************************************************************
-END    
+END 
+                LEA     ENDMSG,A1     
+                MOVE.W  #13,D0          
+                TRAP    #15  
+ 
                 MOVE.W  #9,D0          
                 TRAP    #15                             
                 SIMHALT             ; halt simulator
@@ -242,20 +319,17 @@ WELMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                     DC.B    'X                                                 X',CR,LF
                     DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',CR,LF,CR,LF, 0
 LINE_COUNT          DS.B    1
-MSGINPUT            DC.B    'Please enter first memory address: ',0
-MSGINPUT2           DC.B    'Please enter second memory address: ',0
+MSGINPUT            DC.B    'Please enter first memory address: $',0
+MSGINPUT2           DC.B    'Please enter second memory address: $',0
 BADVALUE            DC.L    'INPUT VALUE EXCEEDS 32 BIT RANGE',CR,LF,0
 BADCHARACTER        DC.L    'INPUT HAS ILLEGAL CHARACTER',CR,LF,0
-MESSAGEOVERFLOW     DC.B    'END',0
+BADADDRESS          DC.L    'SOURCE ADDRESS CANNOT BE BIGGER THEN DESTINATION ADDRESS',CR,LF,0
+VALUETOOLOW         DC.L    'VALUE TOO LOW',CR,LF,0
+NEWPAGEMSG          DC.L    'Continue? (Y | N): ',CR,LF,0
+ENDMSG              DC.B    'END',0
 PLUSMSG             DC.B    '+',0
 NEGMSG              DC.B    '-',0
 CLR                 DC.B    CR,LF,0  
 * Put variables and constants here
 
     END    START        ; last line of source
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
