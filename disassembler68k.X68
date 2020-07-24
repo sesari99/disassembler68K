@@ -224,7 +224,6 @@ SAVESECOND
                 MOVE.L  D2,A2
                 BRA     INPUT2 
                 
-BADADDRESSORDER
                 LEA     BADADDRESS,A1     
                 MOVE.W  #13,D0          
                 TRAP    #15 
@@ -239,7 +238,6 @@ BADADDRESSORDER
                 MOVE.L  #$0,A2
                 MOVE.L  #$0,A3
                 BEQ     INPUT1            
-                
  
 FINISHSAVING
                 MOVE.L  D2,A3
@@ -321,7 +319,6 @@ WELMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                     DC.B    'X                                                 X',CR,LF
                     DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',CR,LF,CR,LF, 0
 LINE_COUNT          DS.B    1
-
 MSGINPUT            DC.B    'Please enter first memory address: $',0
 MSGINPUT2           DC.B    'Please enter second memory address: $',0
 BADVALUE            DC.L    'INPUT VALUE EXCEEDS 32 BIT RANGE',CR,LF,0
@@ -336,10 +333,3 @@ CLR                 DC.B    CR,LF,0
 * Put variables and constants here
 
     END    START        ; last line of source
-
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
