@@ -255,11 +255,57 @@ FEEDOPCODE
                 ;movem everything except D2, bcs u need it. 
                 ADDI.W      #1,D1
                 MOVEM.L     D1/D3-D7/A1-A6,-(sp) 
-                BRA      OPCODETIME
+                BRA         OPCODETIME
 
 OPCODETIME
 
                 ;Do opcode and other things related stuff outside the NEXTIO branch. when you want the next machine language, enter the NEXTIO branch
+                
+JUMPTABLE
+		JSR     OPCODE0000           Call function for OPCODE that start with 0000
+    	RTS
+    	JSR     OPCODE0001           Call function for OPCODE that start with 0001
+    	RTS
+    	JSR     OPCODE0010           Call function for OPCODE that start with 0010
+    	RTS
+    	JSR     OPCODE0011           Call function for OPCODE that start with 0011
+	    RTS
+	    JSR     OPCODE0100           Call function for OPCODE that start with 0100
+	    RTS
+	    JSR     OPCODE0101           Call function for OPCODE that start with 0101
+	    RTS
+	    JSR     OPCODE0110           Call function for OPCODE that start with 0110
+	    RTS
+	    JSR     OPCODE0111           Call function for OPCODE that start with 0111
+	    RTS
+	    JSR     OPCODE1000           Call function for OPCODE that start with 1000
+	    RTS
+	    JSR     OPCODE1001           Call function for OPCODE that start with 1001
+	    RTS
+	    JSR     OPCODE1010           Call function for OPCODE that start with 1010
+	    RTS
+	    JSR     OPCODE1011           Call function for OPCODE that start with 1011
+	    RTS
+	    JSR     OPCODE1100           Call function for OPCODE that start with 1100
+	    RTS
+	    JSR     OPCODE1101           Call function for OPCODE that start with 1101
+	    RTS
+	    JSR     OPCODE1110           Call function for OPCODE that start with 1110
+	    RTS
+	    JSR     OPCODE1111           Call function for OPCODE that start with 1111
+	    RTS                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
                 
                 
                 ******************************************************************************************************************
@@ -336,6 +382,7 @@ CLR                 DC.B    CR,LF,0
 * Put variables and constants here
 
     END    START        ; last line of source
+
 
 *~Font name~Courier New~
 *~Font size~10~
