@@ -219,6 +219,27 @@ SAVESECOND
                 CLR.W   D0
                 ;CLR.W   D4
                 CLR.W   D6
+                ;BRA     CHECKODD
+                BTST.L  #0,D2
+                BEQ     CHECKLOW ;even values will always have their first bit 0. 
+                
+                ;if not report error to higher ups. 
+                LEA     EVENINPUTMSG,A1     
+                MOVE.W  #13,D0          
+                TRAP    #15 
+                CLR.L   D7
+                CLR.L   D6
+                CLR.L   D5
+                CLR.L   D4
+                CLR.L   D3
+                CLR.L   D2
+                CLR.L   D1
+                CLR.L   D0
+                CMP.L   #$0,A2
+                BEQ     INPUT1 
+                BRA     INPUT2                
+                
+CHECKLOW
                 CMP.L   #$0,A2
                 BNE     FINISHSAVING
                 MOVE.L  D2,A2
@@ -257,17 +278,22 @@ FEEDOPCODE
                 MOVEM.L     D1/D3-D7/A1-A6,-(sp) 
                 BRA         OPCODETIME
 
-OPCODETIME      MOVE.L      #0000000,D3           ;MOVE OPCODE HEX TO PLAYTIME MEMORY
-
-                CMP         #$4E71,D3        ;SPECIAL CASE FOR NOOP
+OPCODETIME      MOVE.W      D2,D3                 ;this wasnt here. had to add it other wise there will be nothing in D3
+                MOVE.L      #0000000,D3           ;MOVE OPCODE HEX TO PLAYTIME MEMORY 
+                *^unclear what this does, it just clears D3 - Rio
+                
+                CMPI.W      #$4E71,D2        ;SPECIAL CASE FOR NOOP
                 BEQ         NOOPBRANCH
-                CMP         #$4E75,D3        ;SPECIAL CASE FOR RTS
+                CMPI.W      #$4E75,D2        ;SPECIAL CASE FOR RTS
                 BEQ         RTSBRANCH
                 
                 LSR.L       #8,D3           ;EDIT OPCODE HEX TO JUST INCLUDE PREFIX
-                LSR.L       #8,D3           ;KEEP EDITING TO INCLUDE ONLY PREFIX
+                LSR.L       #8,D3           ;KEEP EDITING TO INCLUDE ONLY PREFIX               
+                *^it just clears D3. If what you are doing is saving the first four bits, you have to do LSR 12 times (i.e. #8, then #4) - Rio
+                
                 LEA         OPJUMPTABLE,A1
-                JSR         0(A1,D3)        
+                JSR         0(A1,D3)
+                BRA         NEXTIO        
 
 NOOPBRANCH      LEA     NOOPMSG,A1
                 MOVE.B  #14,D0
@@ -319,7 +345,8 @@ OPCODE0000 ;PROVISIONAL INVALID MESSAGE
         LEA     INVALIDMSG,A1
         MOVE.B  #14,D0
         TRAP    #15
-        BRA     NEXTIO
+        RTS
+        
                         
                 
       
@@ -336,10 +363,19 @@ NEXTIO
                 MOVEM.L  (sp)+,D1/D3-D7/A1-A6 ;I/O gets his stuff back
                 CMP.L    A3,A2  ;we dont need more machine language once we have reached the the destination
                 BGT      END ;so when equal, we are done
-                CMP.L    #1000,D1       ;hardcoded limit for a page. can be and expected to change
+                CMPI.B   #1,D5
+                BEQ      SECONDPAGE
+                CMP.L    #20,D1
+                BEQ      NEWPAGELOOP
+                BNE      FEEDOPCODE
+
+                
+SECONDPAGE
+                CMP.L    #40,D1       ;hardcoded limit for a page. can be and expected to change
                 BNE      FEEDOPCODE
                 ;check if user wants new page. if no exit. if yes continue to feedopcode.
 NEWPAGELOOP
+                MOVE.B   #1,D5
                 LEA     $9000,A1          ;had to specify or it wont work properly                 
                 LEA     NEWPAGEMSG,A1     
                 MOVE.W  #14,D0          
@@ -393,21 +429,27 @@ LINE_COUNT          DS.B    1
 
 MSGINPUT            DC.B    'Please enter first memory address: $',0
 MSGINPUT2           DC.B    'Please enter second memory address: $',0
-BADVALUE            DC.L    'INPUT VALUE EXCEEDS 32 BIT RANGE',CR,LF,0
-BADCHARACTER        DC.L    'INPUT HAS ILLEGAL CHARACTER',CR,LF,0
-BADADDRESS          DC.L    'SOURCE ADDRESS CANNOT BE BIGGER THEN DESTINATION ADDRESS',CR,LF,0
-VALUETOOLOW         DC.L    'VALUE TOO LOW',CR,LF,0
+BADVALUE            DC.L    'INPUT VALUE EXCEEDS 32 BIT RANGE!',CR,LF,0
+BADCHARACTER        DC.L    'INPUT HAS ILLEGAL CHARACTER!',CR,LF,0
+BADADDRESS          DC.L    'SOURCE ADDRESS CANNOT BE BIGGER THEN DESTINATION ADDRESS!',CR,LF,0
+VALUETOOLOW         DC.L    'VALUE TOO LOW!',CR,LF,0
 NEWPAGEMSG          DC.L    'Continue? (Y | N): ',CR,LF,0
-ENDMSG              DC.B    'END',0
+ENDMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    END    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',0
 PLUSMSG             DC.B    '+',0
 NEGMSG              DC.B    '-',0
 CLR                 DC.B    CR,LF,0
 NOOPMSG             DC.B    'NOOP SPECIALCASE',CR,LF,0
 RTSMSG              DC.B    'RTS SPECIALCASE',CR,LF,0
 INVALIDMSG          DC.B    'INVALID PROVISIONAL MESSAGE!',CR,LF,0
+EVENINPUTMSG        DC.B    'INPUT VALUE IS EVEN!',0
 * Put variables and constants here
 
     END    START        ; last line of source
 
 
 
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~
