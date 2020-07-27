@@ -7,7 +7,7 @@
 * current I/O should be able to detext values exceeding the 32 bit unsigned range (FFFFFFFF) and recognize invalid input.
 * if you input a lower case letter, it will automatically convert into uppercase. 
 *-----------------------------------------------------------    
-        ORG    $1000   
+        ORG    $4000   
 ****************************************************                 
                  ;NOP
                  
@@ -47,7 +47,7 @@
 
                  
                  
-                 ;LSL   #2,D3 
+                 LSL   #2,D3 
                  
                  
                  ;ASL   #2,D3 
@@ -74,7 +74,7 @@ pe
                 
                 
 ****************************************************   
-        ORG    $4000   
+        ORG    $1000   
 START:                  ; first instruction of program   
 
 ;inputs for testing are  here:    
@@ -748,6 +748,8 @@ NEWPAGELOOP
                 BEQ     FEEDOPCODE
                 CMP.B   #$79,D3
                 BEQ     FEEDOPCODE
+                CMP.B   #$0,D3
+                BEQ     FEEDOPCODE
                 CMP.B   #$4E,D3
                 BEQ     END
                 CMP.B   #$6E,D3
@@ -789,7 +791,7 @@ BADVALUE            DC.L    'INPUT VALUE EXCEEDS 32 BIT RANGE!',CR,LF,0
 BADCHARACTER        DC.L    'INPUT HAS ILLEGAL CHARACTER!',CR,LF,0
 BADADDRESS          DC.L    'SOURCE ADDRESS CANNOT BE BIGGER THEN DESTINATION ADDRESS!',CR,LF,0
 VALUETOOLOW         DC.L    'VALUE TOO LOW!',CR,LF,0
-NEWPAGEMSG          DC.L    'Continue? (Y | N): ',CR,LF,0
+NEWPAGEMSG          DC.L    'ENTER TO CONTINUE... ',CR,LF,0
 ENDMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    END    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',0
 PLUSMSG             DC.B    '+',0
 NEGMSG              DC.B    '-',0
@@ -819,12 +821,3 @@ EVENINPUTMSG        DC.B    'INPUT VALUE IS EVEN!',0
 * Put variables and constants here
 
     END    START        ; last line of source
-
-
-
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
