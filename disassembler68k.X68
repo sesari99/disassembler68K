@@ -1,6 +1,6 @@
 *-----------------------------------------------------------
 * Title      :  I/O
-* Written by :  Sesario Imanputra, Zachary Liong, Micha Rice
+* Written by :  Sesario Imanputra, Zachary Liong, Micha Rice, 
 * Date       :  
 * Description: Starts at 4000. For testing purposes, theres a bunch of ML codes to disassemble at 4000. Currently, the first ML code at 4000 is NOP.
 * afterwards, it will include ML of whatever we wrote after NOP.
@@ -720,7 +720,7 @@ NEXTIO          CLR.L     D3
                 CMP.L    A3,A2  ;we dont need more machine language once we have reached the the destination
                 BGT      END ;so when equal, we are done
                 CMPI.B   #1,D5 ;hard cded page limit for first page
-                BEQ      NEWPAGELOOP
+                BEQ      SECONDPAGE
                 CMP.L    #1,D1
                 BEQ      NEWPAGELOOP
                 BNE      FEEDOPCODE
@@ -747,6 +747,8 @@ NEWPAGELOOP
                 CMP.B   #$59,D3
                 BEQ     FEEDOPCODE
                 CMP.B   #$79,D3
+                BEQ     FEEDOPCODE
+                CMP.B   #$0,D3
                 BEQ     FEEDOPCODE
                 CMP.B   #$4E,D3
                 BEQ     END
@@ -789,7 +791,7 @@ BADVALUE            DC.L    'INPUT VALUE EXCEEDS 32 BIT RANGE!',CR,LF,0
 BADCHARACTER        DC.L    'INPUT HAS ILLEGAL CHARACTER!',CR,LF,0
 BADADDRESS          DC.L    'SOURCE ADDRESS CANNOT BE BIGGER THEN DESTINATION ADDRESS!',CR,LF,0
 VALUETOOLOW         DC.L    'VALUE TOO LOW!',CR,LF,0
-NEWPAGEMSG          DC.L    'Continue? (Y | N): ',CR,LF,0
+NEWPAGEMSG          DC.L    'ENTER TO CONTINUE... ',CR,LF,0
 ENDMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    END    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',0
 PLUSMSG             DC.B    '+',0
 NEGMSG              DC.B    '-',0
@@ -819,7 +821,6 @@ EVENINPUTMSG        DC.B    'INPUT VALUE IS EVEN!',0
 * Put variables and constants here
 
     END    START        ; last line of source
-
 
 
 
