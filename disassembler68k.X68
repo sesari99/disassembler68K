@@ -686,7 +686,48 @@ NEXTNEXTFOURHEX CLR.L   D3
 ;EA                
 ******************************************************************************************************************
 
-*FORMAT1         
+;DIRECTION = 0
+;ADD.W $500,D2
+;1101 - D2 - MODE - $500
+;ADD.W $500, D2
+
+;ADD.W D1, D2
+;1101 - D2 - MODE - D1
+
+;DIRECTION = 1
+;ADD.W D1, $500
+;1101 - D1 - MODE - $500
+;ADD.W $500, D1
+
+
+*FORMAT1
+*what is direction
+;^detect first
+;IF 0, DN is destination; BRA DIRECTION0
+;IF 1, DN IS SOURCE; CONTINUE
+
+*what is Dn
+;^for Dn, 
+;BRA OPERAND-DN
+
+*what is mode
+*what is XN  
+;^for Xn
+;BRA OPERAND-...[XN DEPENDS ON TYPE]
+
+*FORMAT1DIRECTION0
+*what is mode
+*what is XN
+;^for Xn
+;BRA OPERAND-...[XN DEPENDS ON TYPE]
+
+*what is Dn
+;^for Dn, 
+;BRA OPERAND-DN
+
+
+;[DISPLAY] ADD.W D1,$500
+        
 *FORMAT2
 *FORMAT3
 *FORMAT4
@@ -712,9 +753,17 @@ NEXTNEXTFOURHEX CLR.L   D3
 *EAGRP9
 *EAGRP10
 
+;OPERANDDN
+
+
 ;I/O         
 ******************************************************************************************************************
-NEXTIO          CLR.L     D3
+NEXTIO          
+;opcode <--opcode [variable]
+;operand1 <---operand [variable], + 0
+;operand2 <--- -(A5) + hex value for ACII character, loop, +0
+                
+                CLR.L     D3
                 CLR.L     D4
                 MOVEM.L  (sp)+,D1/D3-D7/A1-A6 ;I/O gets his stuff back
                 CMP.L    A3,A2  ;we dont need more machine language once we have reached the the destination
