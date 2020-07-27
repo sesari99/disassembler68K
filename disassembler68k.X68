@@ -6,16 +6,78 @@
 * afterwards, it will include ML of whatever we wrote after NOP.
 * current I/O should be able to detext values exceeding the 32 bit unsigned range (FFFFFFFF) and recognize invalid input.
 * if you input a lower case letter, it will automatically convert into uppercase. 
-*-----------------------------------------------------------     
+*-----------------------------------------------------------    
+        ORG    $1000   
+****************************************************                 
+                 ;NOP
+                 
+                 ;MOVE  #3,D3
+                 ;MOVEA #$00000047,A0 ;should be data
+                 
+                 
+                 ;MOVEM D3,-(A5)
+                 ;JMP    pa      ;should be data (not wokring)
+                 
+                 
+                 ;ADD   D2,D3 
+                 ;ADDX   -(A2),-(A3)    ;should be data (not working)
+                 ;ADDA   D3,A3          ;should be data
+                 
+                 ;SUB    D2,D3 
+                 ;SUBX   -(A2),-(A3)    ;should be data (not working)
+                 ;SUBA   D3,A3          ;should be data
+                 
+                 
+                 ;MULS  D2,D3 
+                 ;MULU  D2,D3           ;should be data (not working)
+                 
+                 
+                 ;DIVU  D2,D3 
+                 ;DIVS  D2,D3           ;should be data
+                 
+                 ;LEA   $2000,A2  
+                 
+                 
+                 ;AND   #3,D3 
+                 ;EXG   D2,D3           ;should be data (not working)
+                 
+                 
+                 ;NOT   D3
+                 ;MOVE  D3,SR           ;should be data (not working)
+
+                 
+                 
+                 ;LSL   #2,D3 
+                 
+                 
+                 ;ASL   #2,D3 
+                 
+                 
+                 ;LSL   (A0)+ 
+                 
+                 
+                 ;ASL   (A0)+ 
+                 
+                 
+                 ;BGT   pa
+pa
+                ;BLE   pi
+pi
+                ;BEQ   pu
+pu
+;                BRA   pe            
+po
+;                RTS
+pe
+;                JSR   po   
+
+                
+                
+****************************************************   
         ORG    $4000   
 START:                  ; first instruction of program   
 
-;inputs for testing are  here:
-
-****************************************************
-                NOP
-****************************************************
-      
+;inputs for testing are  here:    
                 LEA     WELMSG,A1   ;Display intro message
                 MOVE.B  #14,D0 
                 TRAP    #15
@@ -278,8 +340,10 @@ FEEDOPCODE
                 MOVEM.L     D1/D3-D7/A1-A6,-(sp) 
                 BRA         OPCODETIME
 
+;OPCODE, with output shoved in A5
+******************************************************************************************************************
+
 OPCODETIME      MOVE.W      D2,D3                 ;this wasnt here. had to add it other wise there will be nothing in D3
-                MOVE.L      #0000000,D3           ;MOVE OPCODE HEX TO PLAYTIME MEMORY 
                 *^unclear what this does, it just clears D3 - Rio
                 
                 CMPI.W      #$4E71,D2        ;SPECIAL CASE FOR NOOP
@@ -287,15 +351,312 @@ OPCODETIME      MOVE.W      D2,D3                 ;this wasnt here. had to add i
                 CMPI.W      #$4E75,D2        ;SPECIAL CASE FOR RTS
                 BEQ         RTSBRANCH
                 
-                LSR.L       #8,D3           ;EDIT OPCODE HEX TO JUST INCLUDE PREFIX
-                LSR.L       #8,D3           ;KEEP EDITING TO INCLUDE ONLY PREFIX               
-                *^it just clears D3. If what you are doing is saving the first four bits, you have to do LSR 12 times (i.e. #8, then #4) - Rio
+                ;then we use D3 to get the first four hex values
+                LSR.W       #8,D3
+                LSR.W       #4,D3       ;AAAA xxxx xxxx xxxx
                 
-                LEA         OPJUMPTABLE,A1
-                JSR         0(A1,D3)
-                BRA         NEXTIO        
+                ;OPCODE GENERAL GROUP
+                CMPI.W      #%0100,D3
+                BEQ         OPCODEGROUP1
+                CMPI.W      #%0110,D3
+                BEQ         OPCODEGROUP2
+                CMPI.W      #%1000,D3
+                BEQ         OPCODEGROUP3
+                CMPI.W      #%1001,D3
+                BEQ         OPCODEGROUP4
+                CMPI.W      #%1100,D3
+                BEQ         OPCODEGROUP5
+                CMPI.W      #%1101,D3
+                BEQ         OPCODEGROUP6
+                CMPI.W      #%1110,D3
+                BEQ         OPCODEGROUP7
+                CMPI.W      #3,D3
+                BEQ         OPCODEGROUP8
+                BRA         INVALIDBRANCH
+                
+OPCODEGROUP1    JSR         NEXTFOURHEX
+                CMPI.W      #%1000,D3
+                BEQ         MOVEMBRANCH 
+                CMPI.W      #%1100,D3
+                BEQ         MOVEMBRANCH 
+                CMPI.W      #%0110,D3
+                BEQ         NOTBRANCH   
+                CMPI.W      #%1110,D3
+                BEQ         JSRMBRANCH  ;got to double check for this branch. too much unncertainty
+                BTST.L      #0,D3 ;OOGABOOGA
+                BNE         LEABRANCH       ;z == 0 if bit is 1 AND got to double check for this branch. too much unncertainty
+                BRA         INVALIDBRANCH
+                
+MOVEMBRANCH     CLR.L   D3
+                LEA     MOVEMMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+*                
+*                *MOVEM EA
+*                CLR.L   D3
+*                MOVE.W  D2,D3
+*                AND.W   #%0011000000000000,D3 ;size
+*                LSR.W   #8
+*                LSR.W   #
+*                CMPI.B  #1,D3
+*                BEQ     OUTPUTLONG
+*                BNE     OUTPUTWORD
+*                                
+*                CLR     D4
+*                MOVE.W  D2,D5 
+*                CLR.L   D3
+*                AND.W   #%0000000000111000,D3   ;src mode  
+*                
+*                CLR.L   D3
+*                MOVE.W  D2,D3 
+*                AND.W   #%0000000000000111,D3   ;src reg 
+*
+*
+*
+*                
+*                CLR.L   D4               
+*                MOVE.W  D2,D4 
+*                AND.W   #%0000000111000000,D3   ;dest mode
+*                
+*                CLR.L   D3
+*                MOVE.W  D2,D3 
+*                MOVE.W  D2,D3  
+*                AND.W   #%0000111000000000,D3   ;destreg
+*    
+*                CLR.L   D4
+*                CLR.L   D3
+               
+                BRA     NEXTIO
+                                
+NOTBRANCH       ;check 7 and 8 and make sure they are  not 11 from 7 and 8
+                CLR.L   D3
+                MOVE.W  D2,D3
+                LSL     #6,D3
+                CMPI.W  #%0100011011,D3
+                BEQ     INVALIDBRANCH
+                LEA     NOTMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO
+                
+JSRMBRANCH      ;check 7 and 8 and make sure they are  not 11 from 7 and 8
+                CLR.L   D3
+                MOVE.W  D2,D3
+                LSL     #6,D3
+                CMPI.W  #%0100111010,D3
+                BEQ     INVALIDBRANCH
+                LEA     JSRMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO
 
-NOOPBRANCH      LEA     NOOPMSG,A1
+LEABRANCH      ;check 7 and make sure its set to 1
+                BTST.L  #7,D2
+                BEQ     INVALIDBRANCH   ;z == 1 if bit is 0
+                LEA     LEAMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO
+                
+OPCODEGROUP2    JSR         NEXTFOURHEX  
+                CMPI.W      #%0000,D3
+                BEQ         BRABRANCH   
+                CMPI.W      #%0111,D3
+                BEQ         BEQBRANCH   
+                CMPI.W      #%1110,D3
+                BEQ         BGTBRANCH
+                CMPI.W      #%1111,D3
+                BEQ         BLEBRANCH
+                BRA         INVALIDBRANCH
+                
+BRABRANCH      ;check 9 and make sure its set to 0
+                BTST.L  #9,D2
+                BNE     INVALIDBRANCH   ;z == 0 if bit is 1
+                LEA     BRAMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO
+                
+BEQBRANCH
+                LEA     BEQMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO
+                
+BGTBRANCH
+                LEA     BGTMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO
+BLEBRANCH
+                LEA     BLEMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO
+                
+OPCODEGROUP3    
+                CLR.L   D3
+                MOVE.W  D2,D3
+                LSR.W   #6,D3
+                AND.W   #%0000000111,D3
+                CMPI.W  #7,D3
+                BEQ     INVALIDBRANCH   
+                LEA     DIVUMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO
+                
+OPCODEGROUP4    ;check 7 to 8 (size) cannot be 11 AND if direction is 1 (8th bit), then 4th and 5th bit cannot be 0
+                CLR.L   D3
+                BTST    #6,D2 ;if set to 1, not sub
+                BNE     TESTSUBBRANCH   ;z == 0 if bit is 1
+                BTST    #8,D2
+                BNE     TESTSUBBRANCH   
+                BRA     TESTSUBBRANCH2  
+   
+TESTSUBBRANCH
+                BTST    #7,D2 ;if set to 1, not sub
+                BNE     INVALIDBRANCH   ;z == 0 if bit is 1
+                BRA     TESTSUBBRANCH2  
+
+             
+TESTSUBBRANCH2  ;check if 5th and 4th bit is equal to zero. if so, it is invalid
+                BTST    #5,D2 ;if set to 1, not sub
+                BNE     SUBBRANCH3 ;z == 0 if bit is 1
+                BRA     SUBBRANCH
+                
+SUBBRANCH3 
+                BTST    #4,D2 ;if set to 1, not sub
+                BEQ     INVALIDBRANCH   ;z == 1 if bit is 0 
+                BRA     SUBBRANCH
+
+SUBBRANCH
+                LEA     SUBMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO
+
+OPCODEGROUP5    JSR     NEXTFOURHEX
+                JSR     NEXTNEXTFOURHEX 
+                CMPI.W  #14,D3          
+                BLE     MULSTEST      ;got to double check for this branch. too much unncertainty. MAKE SURE ITS NOT ABCD AND EXG.6,7,8 must be 111
+                BRA     ANDBRANCH       ;MUST CHECK (S cannot be 11) AND IF(D is one, must be Dn. MAKE SURE ITS NOT MULU
+
+MULSTEST      
+                CLR.L   D3
+                MOVE.W  D2,D3
+                LSR.W   #6,D3
+MULSLOOP
+                CMPI.B  #3,D4
+                BEQ     MULSBRANCH
+                LSL     #1,D3
+                BTST    #0,D3
+                BNE     INVALIDBRANCH   ;z == 1 if bit is 0. if bit is 0, then it cnnot be MULS. 
+                ADDI    #1,D4
+                BRA     MULSLOOP
+                
+MULSBRANCH      LEA     MULSMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO
+
+ANDBRANCH                 
+                ;8,7,6 cannot be 011
+                CLR.L   D3
+                MOVE.W  D2,D3
+                LSR.W   #6,D3
+                AND.W   #$0000000111,D3
+                CMP.W   #%111,D3
+                BEQ     INVALIDBRANCH
+                LEA     ANDMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO 
+                
+
+OPCODEGROUP6    ;first check size
+                CLR.W   D3
+                MOVE.W  D2,D3
+                LSR.W   #6,D3
+                AND.W   #%0000000011,D3
+                CMP.W   #3,D3
+                BEQ     INVALIDBRANCH
+                CLR.W   D3
+                MOVE.W  D2,D3                ;then check direction. if 1, check 4th and 5th bit. if they are both 0, its invalid
+                BTST    #8,D3
+                
+PRINTADD
+                BEQ     TESTADD   ;z == 0 if bit is 1. if bit is 1, then may be invalid                
+                LEA     ADDMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO
+                
+TESTADD         LSL.W   #4,D3
+                AND.W   #%00000000000110000,D3
+                CMP.W   #0,D3
+                BEQ     INVALIDBRANCH
+                BRA     PRINTADD
+                
+
+
+OPCODEGROUP7    JSR     NEXTFOURHEX
+                ;by this point we cleared D3 and have have the next four hex value in D3 
+                CMPI.W  #1,D3
+                BLE     ASLREGBRANCH
+                CMPI.W  #3,D3
+                BLE     LSLREGBRANCH
+                CLR.L   D3
+                MOVE.W  D2,D3
+                BTST    #3,D3
+                BEQ     ASLMEMBRANCH            ;z == 1 if bit is 0
+                BNE     LSLMEMBRANCH            ;z == 0 if bit is 1 
+                BRA     INVALIDBRANCH
+                
+ASLREGBRANCH    LEA     ASLMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO                
+
+LSLREGBRANCH    LEA     LSLMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO 
+
+ASLMEMBRANCH    ;have to check size
+                LSL.W   #6,D3
+                AND.W   #$0000000011,D3
+                CMPI.W  #3,D3
+                BEQ     INVALIDBRANCH
+                LEA     ASLMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO 
+
+LSLMEMBRANCH    ;have to check size
+                LSL.W   #6,D3
+                AND.W   #$0000000011,D3
+                CMPI.W  #3,D3
+                BEQ     INVALIDBRANCH
+                LEA     LSLMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO      
+
+OPCODEGROUP8    ;check dest mode does not equal to 001
+                CLR.L   D3
+                MOVE.W  D2,D3
+                LSR.W   #6,D3
+                AND.W   #$00F,D3
+                AND.B   #%0111,D3
+                CMP.W   #%001,D3
+                BEQ     INVALIDBRANCH
+                LEA     MOVEMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO                
+
+NOOPBRANCH      LEA     NOOPMSG,A1      
                 MOVE.B  #14,D0
                 TRAP    #15
                 BRA     NEXTIO
@@ -305,73 +666,68 @@ RTSBRANCH       LEA     RTSMSG,A1
                 TRAP    #15
                 BRA     NEXTIO
                 
-                ;Do opcode and other things related stuff outside the NEXTIO branch. when you want the next machine language, enter the NEXTIO branch
-;REQUIREMENT: NEED TO KNOW FIRST FOUR BITS OF MEMORY ADDRESS BEING EXAMINED                
-OPJUMPTABLE
-		JSR     OPCODE0000           INVALID
-    	RTS
-*    	JSR     OPCODE0001           INTERPRET AS MOVE.B PROVISIONALLY
-*    	RTS
-*    	JSR     OPCODE0010           INTERPRET AS MOVE.L PROVISIONALLY
-*    	RTS
-*    	JSR     OPCODE0011           INTERPRET AS MOVE.W PROVISIONALLY
-*	    RTS
-*	    JSR     OPCODE0100           EXAMINE NEXT FOUR BITS, COULD BE MOVEM, LEA, NOT, OR JSR
-*	    RTS
-*	    JSR     OPCODE0101           INVALID
-*	    RTS
-*	    JSR     OPCODE0110           BCC OR BRA PROVISIONALLY
-*	    RTS
-*	    JSR     OPCODE0111           INVALID
-*	    RTS
-*	    JSR     OPCODE1000           TREAT AS DIVU PROVISIONALLY, EXAMINE EA
-*	    RTS
-*	    JSR     OPCODE1001           TREAT AS SUBTRACT
-*	    RTS
-*	    JSR     OPCODE1010           INVALID
-*	    RTS
-*	    JSR     OPCODE1011           INVALID
-*	    RTS
-*	    JSR     OPCODE1100           EXAMINE NEXT FOUR BITS, COULD BE MULS OR AND
-*	    RTS
-*	    JSR     OPCODE1101           TREAT AS ADDD PROVISIONALLY
-*	    RTS
-*	    JSR     OPCODE1110           EXAMINE NEXT FOUR BITS, COULD BE ASL OR LSL
-*	    RTS
-*	    JSR     OPCODE1111           INVALID
-*	    RTS                
+INVALIDBRANCH   LEA     INVALIDMSG,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                BRA     NEXTIO
                 
-OPCODE0000 ;PROVISIONAL INVALID MESSAGE
-        LEA     INVALIDMSG,A1
-        MOVE.B  #14,D0
-        TRAP    #15
-        RTS
-        
-                        
-                
-      
-                
-                
-                
-                
-                
-                
-                
-                
-                ******************************************************************************************************************
-NEXTIO                
+NEXTFOURHEX     CLR.L   D3
+                MOVE.W  D2,D3
+                LSR.W   #8,D3
+                AND.W   #%00001111,D3 ;0000 AAAA [XXXX XXXX]
+                RTS    
+
+NEXTNEXTFOURHEX CLR.L   D3  
+                MOVE.W  D2,D3  
+                AND.W   #$00F0,D3  
+                LSR.W   #4,D3   ;0000 0000 AAAA [XXXX]
+                RTS      
+
+;EA                
+******************************************************************************************************************
+
+*FORMAT1         
+*FORMAT2
+*FORMAT3
+*FORMAT4
+*FORMAT5
+*FORMAT6
+*FORMAT7
+*FORMAT8
+*FORMAT9
+*FORMAT10
+*FORMAT11
+*FORMAT12
+*FORMAT13
+*FORMAT14
+*FORMAT15
+*EAGRP1
+*EAGRP2
+*EAGRP3
+*EAGRP4
+*EAGRP5
+*EAGRP6
+*EAGRP7
+*EAGRP8
+*EAGRP9
+*EAGRP10
+
+;I/O         
+******************************************************************************************************************
+NEXTIO          CLR.L     D3
+                CLR.L     D4
                 MOVEM.L  (sp)+,D1/D3-D7/A1-A6 ;I/O gets his stuff back
                 CMP.L    A3,A2  ;we dont need more machine language once we have reached the the destination
                 BGT      END ;so when equal, we are done
-                CMPI.B   #1,D5
+                CMPI.B   #1,D5 ;hard cded page limit for first page
                 BEQ      SECONDPAGE
-                CMP.L    #20,D1
+                CMP.L    #1,D1
                 BEQ      NEWPAGELOOP
                 BNE      FEEDOPCODE
 
                 
 SECONDPAGE
-                CMP.L    #40,D1       ;hardcoded limit for a page. can be and expected to change
+                CMP.L    #1,D1       ;hardcoded limit for other pages page. can be and expected to change
                 BNE      FEEDOPCODE
                 ;check if user wants new page. if no exit. if yes continue to feedopcode.
 NEWPAGELOOP
@@ -438,13 +794,32 @@ ENDMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    END    XXXXX
 PLUSMSG             DC.B    '+',0
 NEGMSG              DC.B    '-',0
 CLR                 DC.B    CR,LF,0
-NOOPMSG             DC.B    'NOOP SPECIALCASE',CR,LF,0
-RTSMSG              DC.B    'RTS SPECIALCASE',CR,LF,0
-INVALIDMSG          DC.B    'INVALID PROVISIONAL MESSAGE!',CR,LF,0
+NOOPMSG             DC.B    'NOOP',CR,LF,0
+RTSMSG              DC.B    'RTS',CR,LF,0
+
+MOVEMMSG            DC.B    'MOVEM.',CR,LF,0
+MOVEMSG             DC.B    'MOVE.',CR,LF,0
+LEAMSG              DC.B    'LEA',CR,LF,0
+NOTMSG              DC.B    'NOT',CR,LF,0
+JSRMSG              DC.B    'JSR',CR,LF,0
+BGTMSG              DC.B    'BGT',CR,LF,0
+BLEMSG              DC.B    'BLE',CR,LF,0
+BEQMSG              DC.B    'BEQ',CR,LF,0
+BRAMSG              DC.B    'BRA',CR,LF,0
+DIVUMSG             DC.B    'DIVU.',CR,LF,0
+SUBMSG              DC.B    'SUB.',CR,LF,0
+MULSMSG             DC.B    'MULS.',CR,LF,0
+ANDMSG              DC.B    'AND.',CR,LF,0
+ADDMSG              DC.B    'ADD.',CR,LF,0
+LSLMSG              DC.B    'LSL.',CR,LF,0
+ASLMSG              DC.B    'ASL.',CR,LF,0
+INVALIDMSG          DC.B    'DATA',CR,LF,0
 EVENINPUTMSG        DC.B    'INPUT VALUE IS EVEN!',0
+
 * Put variables and constants here
 
     END    START        ; last line of source
+
 
 
 
