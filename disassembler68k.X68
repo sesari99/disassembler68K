@@ -15,7 +15,7 @@
                  ;MOVEA #$00000047,A0 ;should be data
                  
                  
-                 ;MOVEM D3,-(A5)
+                 MOVEM.L D3,-(A5)
                  ;JMP    pa      ;should be data (not wokring)
                  
                  
@@ -697,6 +697,36 @@ NEXTNEXTFOURHEX CLR.L   D3
 *FORMAT9
 *FORMAT10
 *FORMAT11
+                MOVE.W  D2,D3
+                JSR     GETSIZEBIT      *check size
+                CMP.B   #%0,D3          *is it word?
+                BEQ     ISWORD          
+                CMP.B   #%1,D3          *is it long?
+                BEQ     ISLONG          
+                MOVE.B  #$11,D7
+                RTS
+
+FINDLIST        MOVE.B  #' ',(A1)+
+                CLR.B   D1
+                CLR.L   D4
+                ANDI.B  #$38,D4         *isolated EA mode
+                CMPI.B  #$20,D4
+
+FINDDATAREG     LSR.B   #1,D3
+                BCS     FOUNDONEDATA    *data register?
+                ADDI.B  #1,D1
+                CMPI.B  #8,D1
+ISWORD          MOVE.B  #'W',(A1)+
+                BRA     FINDLIST
+
+ISLONG          MOVE.B  #'L',(A1)+
+                BRA FINDLIST
+          
+*GETSIZEBIT
+GETSIZEBIT      MOVE.B  D3,D4           *move instruction for shift
+                LSL.B   #1,D4           *shift 1 to the left so the MSB is the size
+                LSR.B   #7,D4           *shift 7 to the right
+                RTS
 *FORMAT12
 *FORMAT13
 *FORMAT14
@@ -707,7 +737,13 @@ NEXTNEXTFOURHEX CLR.L   D3
 *EAGRP4
 *EAGRP5
 *EAGRP6
-*EAGRP7
+*EAGRP7          
+
+
+
+
+
+
 *EAGRP8
 *EAGRP9
 *EAGRP10
@@ -825,3 +861,8 @@ EVENINPUTMSG        DC.B    'INPUT VALUE IS EVEN!',0
 
 
 
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~
