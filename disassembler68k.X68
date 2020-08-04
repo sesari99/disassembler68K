@@ -1,6 +1,6 @@
 *-----------------------------------------------------------
 * Title      :  I/O
-* Written by :  Sesario Imanputra, Zachary Liong, Micha Rice, 
+* Written by :  Sesario Imanputra, Zachary Liong, Micha Rice, Marci Ma
 * Date       :  
 * Description: Starts at 4000. For testing purposes, theres a bunch of ML codes to disassemble at 4000. Currently, the first ML code at 4000 is NOP.
 * afterwards, it will include ML of whatever we wrote after NOP.
@@ -8,67 +8,80 @@
 * if you input a lower case letter, it will automatically convert into uppercase. 
 *-----------------------------------------------------------    
         ORG    $4000   
-****************************************************                 
-                 ;NOP
+****************************************************        
+pro              
+                 NOP
                  
+                 ;OPCODEGROUP8 TEST
                  ;MOVE  #3,D3
                  ;MOVEA #$00000047,A0 ;should be data
                  
-                 
+                 ;OPCODEGROUP1.1 TEST
                  ;MOVEM D3,-(A5)
                  ;JMP    pa      ;should be data (not wokring)
                  
-                 
+                 ;OPCODEGROUP6 TEST
                  ;ADD   D2,D3 
                  ;ADDX   -(A2),-(A3)    ;should be data (not working)
                  ;ADDA   D3,A3          ;should be data
                  
+                 ;OPCODEGROUP4 TEST
                  ;SUB    D2,D3 
                  ;SUBX   -(A2),-(A3)    ;should be data (not working)
                  ;SUBA   D3,A3          ;should be data
                  
-                 
+                 ;OPCODEGROUP5 TEST
                  ;MULS  D2,D3 
                  ;MULU  D2,D3           ;should be data (not working)
                  
-                 
+                 ;OPCODEGROUP3 TEST
                  ;DIVU  D2,D3 
                  ;DIVS  D2,D3           ;should be data
                  
+                 ;OPCODEGROUP1.5 TEST
                  ;LEA   $2000,A2  
                  
-                 
+                 ;OPCODEGROUP5 TEST
                  ;AND   #3,D3 
                  ;EXG   D2,D3           ;should be data (not working)
                  
-                 
-                 ;NOT   D3
+                 ;OPCODEGROUP1.3 TEST
+                 ;NOT.B   D3
+                 ;NOT.W   (A3)+
+                 ;NOT.L   -(A3)
+                 NOT.W   $1234
+                 NOT.L   $12345678
                  ;MOVE  D3,SR           ;should be data (not working)
 
                  
-                 
+                 ;OPCODEGROUP7.2 TEST
                  ;LSL   #2,D3 
                  
-                 
+                 ;OPCODEGROUP7.1 TEST
                  ;ASL   #2,D3 
                  
-                 
+                 ;OPCODEGROUP7.3.2 TEST
                  ;LSL   (A0)+ 
                  
-                 
+                 ;OPCODEGROUP7.3.1 TEST                 
                  ;ASL   (A0)+ 
                  
-                 
-                 ;BGT   pa
-pa
+                ;OPCODEGROUP2.3 TEST
+                ;BGT   pa
+                
+pa              ;OPCODEGROUP2.4 TEST
                 ;BLE   pi
-pi
+                
+pi              ;OPCODEGROUP2.2 TEST
                 ;BEQ   pu
-pu
-;                BRA   pe            
+                
+pu              ;OPCODEGROUP2.1 TEST
+                ;BRA.W    po 
+     
 po
 ;                RTS
-pe
+
+pe               ;OPCODEGROUP1.4 TEST
 ;                JSR   po   
 
                 
@@ -330,15 +343,130 @@ FINISHSAVING
                 CMP.L   A3, A2 ;A2 > A3, then an error should appear
                 BGT     BADADDRESSORDER
 ;by this point we have A3 holding destinationa and A2 holding origin. all data registers should be cleared at this point. the following address registers
-;are not clear: A1, A2 (src), A3 (dest), A7 (stack pointer)
+;are not clear: A1, A2 (src), A3 (dest), A7 (stack pointer), A5 (output stack), D5 && D4i(page counter), D1 && D3 && D6 address output, D2 original value,
+;D1 (temp used),
 
 ;send assembly language to D2
-FEEDOPCODE
-                MOVE.W      (A2)+,D2
+FEEDOPCODE                
+                
+                MOVE.L      D1,D4
+                
+                
+                ************* printing out address location
+                MOVE.L      A2,D1
+                MOVEM.L     D2-D7/A1-A6,-(sp)   
+                MOVE.L      #16,D4
+                JSR         HEXOUTPUT
+                MOVEM.L    (sp)+,D2-D7/A1-A6 ;I/O gets his stuff back   
+                CLR.L       D2
+                MOVE.W      (A2)+,D2                
+           
+                                
+*                MOVE.W  #3,D0         
+*                TRAP    #15 
+                
+                *for final version, lets put that in A5
+                ***************
+                
+                ***************
+                
+                MOVE.L      D4,D1
+
+                CLR.W       D4
+
+                
                 ;movem everything except D2, bcs u need it. 
                 ADDI.W      #1,D1
                 MOVEM.L     D1/D3-D7/A1-A6,-(sp) 
                 BRA         OPCODETIME
+                
+HEXOUTPUT      ;used D1(value being outpueed), D3 (D1 temp), D6 (char counter), A1(string buffer), A2 (string buffer), D4(0 size).
+                CLR.L   D2
+                CLR.L   D3
+                CLR.L   D5
+                CLR.L   D6
+                CLR.L   D7
+                LEA tempresult, A1      ; load the address of variable "tempresult" into A1
+                CLR.L D6                ; use D6 to count the total number of digits after conversion
+                
+                    
+* your code should start here
+
+CHEAPLOOP       CMP        #16,D1
+                BLT        DIRECTCONV
+                DIVS.W     #16,D1           ;find remainder 17
+                MOVE.L     D1,D3            ;set up to isolate remainder
+                ASR.L      #8,D3            ;remainder isolated 
+                ASR.L      #8,D3            ;NOW
+                LSL.L      #8,D1
+                LSL.L      #8,D1
+                LSR.L      #8,D1
+                LSR.L      #8,D1            ;Clunkyway to clear left hand side
+                BRA        CONVERTIT                
+                   
+DIRECTCONV      CMP        #0,D1            ;IF it is zero
+                BEQ        DONE             ;we are done
+                MOVE.B     D1,D3
+                CLR        D1
+                BRA        CONVERTIT
+  
+CONVERTIT       CMP        #9,D3            ;If over 9
+                BGT        SPECCASE         ;go to adding 55
+                ADD.B      #48,D3           ;otherwise add 48 for ascii 0-9
+                ADD.B      #1,D6            ;increment #of characters
+                MOVE.B     D3,(A1)+         ;add ascii value
+                BRA        CHEAPLOOP              
+
+SPECCASE        ADD.B      #55,D3           ;for ascii A-G
+                ADD.B      #1,D6           ;increment #of characters
+                MOVE.B     D3,(A1)+        ;add ascii value
+                BRA        CHEAPLOOP
+DONE  
+                MOVE.B     D6,D5
+*                MOVE.W     #$8,D6
+                SUB.W      D4,D5
+                AND.B      #$0F,D5
+                
+*ZeroLoop           
+*                MOVE.B     #$0,(A1)+
+*                SUBI.W     #1,D5
+*                CMPI.B     #0,D5              
+*                BNE        ZeroLoop  
+                LEA        base16value,A2
+                BRA        REVERSEIT
+
+                
+REVERSEIT       CMP        #0,D6         
+                BEQ        FINAL
+                MOVE.B     -(A1),D1        ;code to reverse string
+                MOVE.B     D1,(A2)+
+                ADD.B      #-1,D6
+                BRA        REVERSEIT   
+                
+                
+FINAL           MOVE.B      #0,(A2)+        ;add NULL ASCII CHAR
+                CMPI.B      #0,D4
+                BLT         SKIPZEROLOOP
+                
+
+ZEROLOOP        CLR.L       D1
+                MOVE.B      #48,D1
+                MOVE.L      #6,D0
+                TRAP        #15
+                SUBI.W     #1,D5
+                CMPI.B     #0,D5 
+                BNE        ZEROLOOP    
+    
+                * your code should stop before this line
+                
+SKIPZEROLOOP
+                LEA base16value, A1 ; display the string stored at "base16value"
+                MOVE.L #14,D0       ; task number #13
+                TRAP #15            ; call TRAP #15 function        
+                
+                RTS
+
+ 
 
 ;OPCODE, with output shoved in A5
 ******************************************************************************************************************
@@ -437,7 +565,38 @@ NOTBRANCH       ;check 7 and 8 and make sure they are  not 11 from 7 and 8
                 LEA     NOTMSG,A1
                 MOVE.B  #14,D0
                 TRAP    #15
+                
+                ;get size
+                JSR     getSizeFormat1
+                JSR     EAGROUP9
+                
                 BRA     NEXTIO
+                
+getSizeFormat1
+                CLR.L   D3  
+                MOVE.L  D2,D3
+                LSR.L   #6,D3
+                AND.L   #%0000000011,D3 ;saves last two digits
+                CMP.B   #2,D3
+                BEQ     PRINTWORDSIZE
+                CMP.B   #1,D3
+                BEQ     PRINTLONGSIZE
+                LEA     BYTESIZE,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                RTS
+    
+PRINTLONGSIZE
+                LEA     WORDSIZE,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                RTS  
+
+PRINTWORDSIZE
+                LEA     LONGSIZE,A1
+                MOVE.B  #14,D0
+                TRAP    #15
+                RTS
                 
 JSRMBRANCH      ;check 7 and 8 and make sure they are  not 11 from 7 and 8
                 CLR.L   D3
@@ -475,23 +634,27 @@ BRABRANCH      ;check 9 and make sure its set to 0
                 LEA     BRAMSG,A1
                 MOVE.B  #14,D0
                 TRAP    #15
+                JSR     EAGROUP5
                 BRA     NEXTIO
                 
 BEQBRANCH
                 LEA     BEQMSG,A1
                 MOVE.B  #14,D0
                 TRAP    #15
+                JSR     EAGROUP5
                 BRA     NEXTIO
                 
 BGTBRANCH
                 LEA     BGTMSG,A1
                 MOVE.B  #14,D0
                 TRAP    #15
+                JSR     EAGROUP5
                 BRA     NEXTIO
 BLEBRANCH
                 LEA     BLEMSG,A1
                 MOVE.B  #14,D0
                 TRAP    #15
+                JSR     EAGROUP5
                 BRA     NEXTIO
                 
 OPCODEGROUP3    
@@ -603,27 +766,27 @@ TESTADD         LSL.W   #4,D3
 OPCODEGROUP7    JSR     NEXTFOURHEX
                 ;by this point we cleared D3 and have have the next four hex value in D3 
                 CMPI.W  #1,D3
-                BLE     ASLREGBRANCH
+                BLE     ASLMEMBRANCH
                 CMPI.W  #3,D3
-                BLE     LSLREGBRANCH
+                BLE     LSLMEMBRANCH
                 CLR.L   D3
                 MOVE.W  D2,D3
                 BTST    #3,D3
-                BEQ     ASLMEMBRANCH            ;z == 1 if bit is 0
-                BNE     LSLMEMBRANCH            ;z == 0 if bit is 1 
+                BEQ     ASLREGBRANCH            ;z == 1 if bit is 0
+                BNE     LSLREGBRANCH            ;z == 0 if bit is 1 
                 BRA     INVALIDBRANCH
                 
-ASLREGBRANCH    LEA     ASLMSG,A1
+ASLMEMBRANCH    LEA     ASLMSG,A1
                 MOVE.B  #14,D0
                 TRAP    #15
                 BRA     NEXTIO                
 
-LSLREGBRANCH    LEA     LSLMSG,A1
+LSLMEMBRANCH    LEA     LSLMSG,A1
                 MOVE.B  #14,D0
                 TRAP    #15
                 BRA     NEXTIO 
 
-ASLMEMBRANCH    ;have to check size
+ASLREGBRANCH    ;have to check size
                 LSL.W   #6,D3
                 AND.W   #$0000000011,D3
                 CMPI.W  #3,D3
@@ -633,7 +796,7 @@ ASLMEMBRANCH    ;have to check size
                 TRAP    #15
                 BRA     NEXTIO 
 
-LSLMEMBRANCH    ;have to check size
+LSLREGBRANCH    ;have to check size
                 LSL.W   #6,D3
                 AND.W   #$0000000011,D3
                 CMPI.W  #3,D3
@@ -669,6 +832,7 @@ RTSBRANCH       LEA     RTSMSG,A1
 INVALIDBRANCH   LEA     INVALIDMSG,A1
                 MOVE.B  #14,D0
                 TRAP    #15
+                JSR     EAGROUPINVALID
                 BRA     NEXTIO
                 
 NEXTFOURHEX     CLR.L   D3
@@ -685,7 +849,256 @@ NEXTNEXTFOURHEX CLR.L   D3
 
 ;EA                
 ******************************************************************************************************************
+EAGROUPINVALID
+                MOVE.B      #$24,D1
+                MOVE.L      #6,D0
+                TRAP        #15
+                MOVE.L      D2,D1
+                MOVE.L      #-1,D4
+                JSR         HEXOUTPUT
+                RTS
+                
 
+
+
+EAGROUP5
+;d1 stores address and d2 holds displacement value. 
+                    
+                    CMP.W       #$6000,D2 
+                    BEQ         EAGROUP5_SIZEW  
+                    
+                    MOVE.B      #$42,D1
+                    MOVE.L      #6,D0
+                    TRAP        #15
+                
+                    MOVE.B      #$20,D1
+                    MOVE.L      #6,D0
+                    TRAP        #15
+                    
+                    MOVE.B      #$20,D1
+                    MOVE.L      #6,D0
+                    TRAP        #15
+                    
+                                                            
+                    MOVE.L      #$24,D1
+                    MOVE.L      #6,D0
+                    TRAP        #15
+                    
+                    ;byte size instruction
+                    MOVE.L  A2,D1
+*                    SUBI.L  #2,D1
+                    AND.W   #$00FF,D2
+                    BTST    #$7,D2
+                    BEQ     EAGROUP5_ADD      ;z == 0 if bit is 1 AND got to double check for this branch. too much unncertainty   
+                    MULS.W  #-1,D2
+                    AND.W   #$00FF,D2
+                    SUB.W   D2,D1
+                    MOVE.L  #8,D4
+                    MOVEM.L D2-D7/A1-A6,-(sp)
+                    MOVE.L  #8,D4
+                    JSR     HEXOUTPUT
+                    MOVEM.L  (sp)+,D2-D7/A1-A6
+                    RTS
+EAGROUP5_ADD
+                    ADD.W   D2,D1
+                    MOVEM.L D2-D7/A1-A6,-(sp)
+                    MOVE.L  #8,D4
+                    JSR     HEXOUTPUT
+                    MOVEM.L  (sp)+,D2-D7/A1-A6
+                    RTS
+            
+EAGROUP5_SIZEW
+                    MOVE.B      #$57,D1
+                    MOVE.L      #6,D0
+                    TRAP        #15
+                
+                    MOVE.B      #$20,D1
+                    MOVE.L      #6,D0
+                    TRAP        #15
+                    
+                    MOVE.B      #$20,D1
+                    MOVE.L      #6,D0
+                    TRAP        #15
+                    
+                    MOVE.L      #$24,D1
+                    MOVE.L      #6,D0
+                    TRAP        #15
+                    
+                    CLR.W    D2
+                    MOVE.L   A2,D1
+*                   SUBI.L  #2,D1
+                    MOVE.W  (A2)+,D2
+                    BTST    #$15,D2
+                    BTST.L  #0,D3          ;z == 0 if bit is 1 AND got to double check for this branch. too much unncertainty  
+                    BEQ     EAGROUP5_ADD
+                    MULS.W  #-1,D2
+                    SUB.W   D2,D1
+                    MOVE.L  #8,D4
+                    MOVEM.L D2-D7/A1-A6,-(sp)
+                    MOVE.L  #8,D4
+                    JSR     HEXOUTPUT
+                    MOVEM.L  (sp)+,D2-D7/A1-A6
+                    RTS
+                    
+EAGROUP9
+                    CLR.L   D1
+                    JSR     EALASTVALUE
+                    RTS
+                    
+EALASTVALUE
+                    *check if mode respects register value
+                    *if not branch out to immediate data
+                    MOVE.L  D2,D1
+                    LSR.L   #3,D1
+                    AND.L   #%0000000000111,D1
+                    CMP.L   #7,D1
+                    BEQ     IMMEDIATEDATA
+                    CMP.L   #4,D1
+                    BEQ     ADDRESSDECREMENT
+                    CMP.L   #3,D1
+                    BEQ     ADDRESSINCREMENT
+                    CMP.L   #2,D1
+                    BEQ     INDIRECTADDRESS
+                    CMP.L   #1,D1
+                    BEQ     DIRECTADDRESS
+                    ;data reg
+                    MOVE.B  #$44,D1
+                    MOVE.L  #6,D0
+                    TRAP    #15
+                    
+                    CLR.L   D1
+                    MOVE.L  D2,D1
+                    AND.L   #%0000000000000111,D1
+                    ADDI.L  #$30,D1
+                    MOVE.L  #6,D0
+                    TRAP    #15
+                    RTS
+                    
+INDIRECTADDRESS  
+                    MOVE.L  #40,D1
+                    MOVE.L  #6,D0
+                    TRAP    #15
+                    
+                    MOVE.L  D2,D1
+                    AND.L   #%0000000000000111,D1
+                    ADDI.L  #$30,D1
+                    MOVE.L  #6,D0
+                    TRAP    #15
+                    
+                    MOVE.L  #41,D1
+                    MOVE.L  #6,D0
+                    TRAP    #15
+                    
+                    RTS                  
+      
+DIRECTADDRESS
+                    MOVE.B  #$41,D1
+                    MOVE.L  #6,D0
+                    TRAP    #15
+                    
+                    CLR.L   D1
+                    MOVE.L  D2,D1
+                    AND.L   #%0000000000000111,D1
+                    ADDI.L  #$30,D1
+                    MOVE.L  #6,D0
+                    TRAP    #15
+                    RTS
+
+              
+IMMEDIATEDATA
+                    ;need to decide whether print long, word, or byte sized. 
+                    ;decide size of output, 0(word), 1(long), 4(immediate)
+*                    MOVE.L      #$23,D1
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+                    
+                    CLR.L   D1
+                    MOVE.L  D2,D1
+                    AND.L   #%0000000000000111,D2
+                    ;let d1 have the next value
+                    CLR.L   D1
+                    MOVE.W  (A2)+,D1
+                    CMPI.L  #0,D2
+                    BEQ     PRINTWORDDATA
+                    CMPI.L  #1,D2
+                    BEQ     PRINTLONGDATA
+                    CMPI.L  #4,D2
+                    BEQ     PRINTIMMEDIATEDATA
+                    RTS         ;it should never reach here
+                        
+PRINTWORDDATA
+                    MOVEM.L D2-D7/A1-A6,-(sp)
+                    MOVE.L  #4,D4
+                    JSR     HEXOUTPUT
+                    MOVEM.L  (sp)+,D2-D7/A1-A6
+                    RTS
+
+PRINTLONGDATA
+                    MOVEM.L D2-D7/A1-A6,-(sp)
+                    MOVE.L  #8,D4
+                    JSR     HEXOUTPUT
+                    MOVEM.L  (sp)+,D2-D7/A1-A6
+                    RTS
+  
+PRINTIMMEDIATEDATA
+                    MOVEM.L D2-D7/A1-A6,-(sp)
+                    MOVE.L  #-1,D4
+                    JSR     HEXOUTPUT
+                    MOVEM.L  (sp)+,D2-D7/A1-A6
+                    RTS                  
+                        
+ADDRESSINCREMENT
+                    MOVE.L  #40,D1
+                    MOVE.L  #6,D0
+                    TRAP    #15
+                    
+                    MOVE.B  #$41,D1
+                    MOVE.L  #6,D0
+                    TRAP    #15
+                      
+                    MOVE.L  D2,D1
+                    AND.L   #%0000000000000111,D1
+                    ADDI.L  #$30,D1
+                    MOVE.L  #6,D0
+                    TRAP    #15
+                    
+                    MOVE.L  #41,D1
+                    MOVE.L  #6,D0
+                    TRAP    #15
+                    
+                    MOVE.L  #43,D1
+                    MOVE.L  #6,D0
+                    TRAP    #15
+                    
+                    RTS
+                    
+
+ADDRESSDECREMENT
+                                        
+                    MOVE.L  #45,D1
+                    MOVE.L  #6,D0
+                    TRAP    #15
+                    
+                    MOVE.L  #40,D1
+                    MOVE.L  #6,D0
+                    TRAP    #15
+                    
+                    MOVE.B  #$41,D1
+                    MOVE.L  #6,D0
+                    TRAP    #15
+                    
+                    MOVE.L  D2,D1
+                    AND.L   #%0000000000000111,D1
+                    ADDI.L  #$30,D1
+                    MOVE.L  #6,D0
+                    TRAP    #15
+                    
+                    MOVE.L  #41,D1
+                    MOVE.L  #6,D0
+                    TRAP    #15
+                    
+                    RTS
+            
 *FORMAT1         
 *FORMAT2
 *FORMAT3
@@ -715,7 +1128,12 @@ NEXTNEXTFOURHEX CLR.L   D3
 ;I/O         
 ******************************************************************************************************************
 NEXTIO          CLR.L     D3
-                CLR.L     D4
+                CLR.L     D4 
+
+                LEA     CLR,A1   ;Display intro message
+                MOVE.B  #14,D0 
+                TRAP    #15
+                              
                 MOVEM.L  (sp)+,D1/D3-D7/A1-A6 ;I/O gets his stuff back
                 CMP.L    A3,A2  ;we dont need more machine language once we have reached the the destination
                 BGT      END ;so when equal, we are done
@@ -763,6 +1181,9 @@ NEWPAGELOOP
                 BRA     NEWPAGELOOP  
                 ******************************************************************************************************************
 END 
+                LEA     CLR,A1     ;Ask for first input
+                MOVE.B  #14,D0          
+                TRAP    #15 
                 LEA     ENDMSG,A1     
                 MOVE.W  #13,D0          
                 TRAP    #15  
@@ -796,31 +1217,40 @@ ENDMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    END    XXXXX
 PLUSMSG             DC.B    '+',0
 NEGMSG              DC.B    '-',0
 CLR                 DC.B    CR,LF,0
-NOOPMSG             DC.B    'NOOP',CR,LF,0
-RTSMSG              DC.B    'RTS',CR,LF,0
+NOOPMSG             DC.B    ' NOP',0
+RTSMSG              DC.B    ' RTS',0
 
-MOVEMMSG            DC.B    'MOVEM.',CR,LF,0
-MOVEMSG             DC.B    'MOVE.',CR,LF,0
-LEAMSG              DC.B    'LEA',CR,LF,0
-NOTMSG              DC.B    'NOT',CR,LF,0
-JSRMSG              DC.B    'JSR',CR,LF,0
-BGTMSG              DC.B    'BGT',CR,LF,0
-BLEMSG              DC.B    'BLE',CR,LF,0
-BEQMSG              DC.B    'BEQ',CR,LF,0
-BRAMSG              DC.B    'BRA',CR,LF,0
-DIVUMSG             DC.B    'DIVU.',CR,LF,0
-SUBMSG              DC.B    'SUB.',CR,LF,0
-MULSMSG             DC.B    'MULS.',CR,LF,0
-ANDMSG              DC.B    'AND.',CR,LF,0
-ADDMSG              DC.B    'ADD.',CR,LF,0
-LSLMSG              DC.B    'LSL.',CR,LF,0
-ASLMSG              DC.B    'ASL.',CR,LF,0
-INVALIDMSG          DC.B    'DATA',CR,LF,0
-EVENINPUTMSG        DC.B    'INPUT VALUE IS EVEN!',0
+MOVEMMSG            DC.B    ' MOVEM.',0
+MOVEMSG             DC.B    ' MOVE.',0
+LEAMSG              DC.B    ' LEA.',0
+NOTMSG              DC.B    ' NOT.',0
+JSRMSG              DC.B    ' JSR.',0
+BGTMSG              DC.B    ' BGT.',0
+BLEMSG              DC.B    ' BLE.',0
+BEQMSG              DC.B    ' BEQ.',0
+BRAMSG              DC.B    ' BRA.',0
+DIVUMSG             DC.B    ' DIVU.',0
+SUBMSG              DC.B    ' SUB.',0
+MULSMSG             DC.B    ' MULS.',0
+ANDMSG              DC.B    ' AND.',0
+ADDMSG              DC.B    ' ADD.',0
+LSLMSG              DC.B    ' LSL.',0
+ASLMSG              DC.B    ' ASL.',0
+INVALIDMSG          DC.B    ' DATA  ',0
+EVENINPUTMSG        DC.B    ' INPUT VALUE IS EVEN!',0
+SPACEMSG            DC.B    '   ',0
+WORDSIZE            DC.B    'W  ',0
+BYTESIZE            DC.B    'B  ',0
+LONGSIZE            DC.B    'L  ',0
+tempresult DS.B 10      ; variable to save temporary result
+base16value DS.B 10     ; variable to save the final result
+
 
 * Put variables and constants here
 
     END    START        ; last line of source
+
+
 
 
 
