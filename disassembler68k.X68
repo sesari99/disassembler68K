@@ -13,20 +13,20 @@ pro
                  NOP
                  
                  ;OPCODEGROUP8 TEST
-                 ;MOVE  #3,D3
+                 ;MOVE.B  D2,D3          
                  ;MOVEA #$00000047,A0 ;should be data
                  
                  ;OPCODEGROUP1.1 TEST
-                 ;MOVEM D3,-(A5)
+                 ;MOVEM.W D3,-(A5)   
                  ;JMP    pa      ;should be data (not wokring)
                  
                  ;OPCODEGROUP6 TEST
-                 ;ADD   D2,D3 
+                 ;ADD.B   D2,D3 
                  ;ADDX   -(A2),-(A3)    ;should be data (not working)
                  ;ADDA   D3,A3          ;should be data
                  
                  ;OPCODEGROUP4 TEST
-                 ;SUB    D2,D3 
+                 ;SUB.B    D2,D3 
                  ;SUBX   -(A2),-(A3)    ;should be data (not working)
                  ;SUBA   D3,A3          ;should be data
                  
@@ -42,13 +42,13 @@ pro
                  ;LEA   $2000,A2  
                  
                  ;OPCODEGROUP5 TEST
-                 ;AND   #3,D3 
+                 ;AND   #3,D3            
                  ;EXG   D2,D3           ;should be data (not working)
                  
                  ;OPCODEGROUP1.3 TEST
-                 ;NOT.B   D3
-                 ;NOT.W   (A3)+
-                 ;NOT.L   -(A3)
+                 NOT.B   D3
+                 NOT.W   (A3)+
+                 NOT.L   -(A3)
                  NOT.W   $1234
                  NOT.L   $12345678
                  ;MOVE  D3,SR           ;should be data (not working)
@@ -67,19 +67,19 @@ pro
                  ;ASL   (A0)+ 
                  
                 ;OPCODEGROUP2.3 TEST
-                ;BGT   pa
+                 BGT   pa
                 
 pa              ;OPCODEGROUP2.4 TEST
-                ;BLE   pi
+                 BLE   pi
                 
 pi              ;OPCODEGROUP2.2 TEST
-                ;BEQ   pu
+                 BEQ   pu
                 
 pu              ;OPCODEGROUP2.1 TEST
-                ;BRA.W    po 
+                 BRA.W    po 
      
 po
-;                RTS
+                 RTS
 
 pe               ;OPCODEGROUP1.4 TEST
 ;                JSR   po   
@@ -343,42 +343,34 @@ FINISHSAVING
                 CMP.L   A3, A2 ;A2 > A3, then an error should appear
                 BGT     BADADDRESSORDER
 ;by this point we have A3 holding destinationa and A2 holding origin. all data registers should be cleared at this point. the following address registers
-;are not clear: A1, A2 (src), A3 (dest), A7 (stack pointer), A5 (output stack), D5 && D4i(page counter), D1 && D3 && D6 address output, D2 original value,
+;are not clear: A1, A2 (src), A3 (dest), A7 (stack pointer), A5 && A4 (output stack), D5 && D4i(page counter), D1 && D3 && D6 address output, D2 original value,
 ;D1 (temp used),
 
 ;send assembly language to D2
 FEEDOPCODE                
-                
-                MOVE.L      D1,D4
-                
-                
-                ************* printing out address location
-                MOVE.L      A2,D1
-                MOVEM.L     D2-D7/A1-A6,-(sp)   
-                MOVE.L      #16,D4
-                JSR         HEXOUTPUT
-                MOVEM.L    (sp)+,D2-D7/A1-A6 ;I/O gets his stuff back   
+                LEA         tempresult, A4      ; load the address of variable "tempresult" into A1
+                MOVE.B     #$A,(A4)+
                 CLR.L       D2
-                MOVE.W      (A2)+,D2                
-           
-                                
-*                MOVE.W  #3,D0         
-*                TRAP    #15 
-                
-                *for final version, lets put that in A5
-                ***************
-                
-                ***************
-                
-                MOVE.L      D4,D1
-
-                CLR.W       D4
-
-                
+                MOVE.W      (A2)+,D2                                
                 ;movem everything except D2, bcs u need it. 
                 ADDI.W      #1,D1
                 MOVEM.L     D1/D3-D7/A1-A6,-(sp) 
                 BRA         OPCODETIME
+                
+OUTPUTADDRESS                
+                ************* printing out address location
+                MOVE.L      D1,D4
+                MOVE.L      A2,D1
+                SUB.L       #$2,D1
+                MOVEM.L     D2-D7/A1-A3/A6,-(sp)   
+                MOVE.L      #$8,D4 ;10
+                JSR         HEXOUTPUT
+                MOVEM.L    (sp)+,D2-D7/A1-A3/A6 ;I/O gets his stuff back
+                MOVE.L      D4,D1
+                CLR.W       D4   
+                RTS
+
+
                 
 HEXOUTPUT      ;used D1(value being outpueed), D3 (D1 temp), D6 (char counter), A1(string buffer), A2 (string buffer), D4(0 size).
                 CLR.L   D2
@@ -386,13 +378,13 @@ HEXOUTPUT      ;used D1(value being outpueed), D3 (D1 temp), D6 (char counter), 
                 CLR.L   D5
                 CLR.L   D6
                 CLR.L   D7
-                LEA tempresult, A1      ; load the address of variable "tempresult" into A1
-                CLR.L D6                ; use D6 to count the total number of digits after conversion
+                CLR.L   D6                ; use D6 to count the total number of digits after conversion
+
                 
                     
 * your code should start here
 
-CHEAPLOOP       CMP        #16,D1
+CHEAPLOOP       CMP.L      #16,D1
                 BLT        DIRECTCONV
                 DIVS.W     #16,D1           ;find remainder 17
                 MOVE.L     D1,D3            ;set up to isolate remainder
@@ -414,58 +406,42 @@ CONVERTIT       CMP        #9,D3            ;If over 9
                 BGT        SPECCASE         ;go to adding 55
                 ADD.B      #48,D3           ;otherwise add 48 for ascii 0-9
                 ADD.B      #1,D6            ;increment #of characters
-                MOVE.B     D3,(A1)+         ;add ascii value
+                MOVE.B     D3,(A4)+         ;add ascii value
                 BRA        CHEAPLOOP              
 
 SPECCASE        ADD.B      #55,D3           ;for ascii A-G
                 ADD.B      #1,D6           ;increment #of characters
-                MOVE.B     D3,(A1)+        ;add ascii value
+                MOVE.B     D3,(A4)+        ;add ascii value
                 BRA        CHEAPLOOP
 DONE  
                 MOVE.B     D6,D5
 *                MOVE.W     #$8,D6
                 SUB.W      D4,D5
-                AND.B      #$0F,D5
+                CMPI.W     #0,D5
+                BEQ        TOREVERSEIT
+                MULS.W     #-1,D5
+                AND.W      #$000F,D5
                 
 *ZeroLoop           
-*                MOVE.B     #$0,(A1)+
+*                MOVE.B     #$0,(A5)+
 *                SUBI.W     #1,D5
 *                CMPI.B     #0,D5              
-*                BNE        ZeroLoop  
-                LEA        base16value,A2
-                BRA        REVERSEIT
-
+*                BNE        ZeroLoop
+TOREVERSEIT  
+                CMPI.W      #0,D4           ;if its zero or less skip (D4 <= 0)
+                BLE         SKIPZEROLOOP
+                CMPI.B      #0,D5 
+                BEQ         SKIPZEROLOOP
                 
-REVERSEIT       CMP        #0,D6         
-                BEQ        FINAL
-                MOVE.B     -(A1),D1        ;code to reverse string
-                MOVE.B     D1,(A2)+
-                ADD.B      #-1,D6
-                BRA        REVERSEIT   
-                
-                
-FINAL           MOVE.B      #0,(A2)+        ;add NULL ASCII CHAR
-                CMPI.B      #0,D4
-                BLT         SKIPZEROLOOP
-                
-
 ZEROLOOP        CLR.L       D1
-                MOVE.B      #48,D1
-                MOVE.L      #6,D0
-                TRAP        #15
+                MOVE.B     #$30,(A4)+
                 SUBI.W     #1,D5
                 CMPI.B     #0,D5 
                 BNE        ZEROLOOP    
-    
-                * your code should stop before this line
+                   
                 
 SKIPZEROLOOP
-                LEA base16value, A1 ; display the string stored at "base16value"
-                MOVE.L #14,D0       ; task number #13
-                TRAP #15            ; call TRAP #15 function        
-                
-                RTS
-
+                RTS             
  
 
 ;OPCODE, with output shoved in A5
@@ -499,7 +475,7 @@ OPCODETIME      MOVE.W      D2,D3                 ;this wasnt here. had to add i
                 CMPI.W      #%1110,D3
                 BEQ         OPCODEGROUP7
                 CMPI.W      #3,D3
-                BEQ         OPCODEGROUP8
+                BLE         OPCODEGROUP8
                 BRA         INVALIDBRANCH
                 
 OPCODEGROUP1    JSR         NEXTFOURHEX
@@ -516,44 +492,20 @@ OPCODEGROUP1    JSR         NEXTFOURHEX
                 BRA         INVALIDBRANCH
                 
 MOVEMBRANCH     CLR.L   D3
-                LEA     MOVEMMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
-*                
-*                *MOVEM EA
-*                CLR.L   D3
-*                MOVE.W  D2,D3
-*                AND.W   #%0011000000000000,D3 ;size
-*                LSR.W   #8
-*                LSR.W   #
-*                CMPI.B  #1,D3
-*                BEQ     OUTPUTLONG
-*                BNE     OUTPUTWORD
-*                                
-*                CLR     D4
-*                MOVE.W  D2,D5 
-*                CLR.L   D3
-*                AND.W   #%0000000000111000,D3   ;src mode  
-*                
-*                CLR.L   D3
-*                MOVE.W  D2,D3 
-*                AND.W   #%0000000000000111,D3   ;src reg 
-*
-*
-*
-*                
-*                CLR.L   D4               
-*                MOVE.W  D2,D4 
-*                AND.W   #%0000000111000000,D3   ;dest mode
-*                
-*                CLR.L   D3
-*                MOVE.W  D2,D3 
-*                MOVE.W  D2,D3  
-*                AND.W   #%0000111000000000,D3   ;destreg
-*    
-*                CLR.L   D4
-*                CLR.L   D3
-               
+                JSR     getSizeFormat2
+                MOVE.B  D3,(A4)+
+                MOVE.B  #'.',(A4)+
+                MOVE.B  #'M',(A4)+
+                MOVE.B  #'E',(A4)+
+                MOVE.B  #'V',(A4)+
+                MOVE.B  #'O',(A4)+
+                MOVE.B  #'M',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT 
                 BRA     NEXTIO
                                 
 NOTBRANCH       ;check 7 and 8 and make sure they are  not 11 from 7 and 8
@@ -562,14 +514,32 @@ NOTBRANCH       ;check 7 and 8 and make sure they are  not 11 from 7 and 8
                 LSL     #6,D3
                 CMPI.W  #%0100011011,D3
                 BEQ     INVALIDBRANCH
-                LEA     NOTMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
-                
-                ;get size
-                JSR     getSizeFormat1
+                CLR.L   D3 ;this is now going to hold size branch value
+                ;should also check size bits
+*                LEA     NOTMSG,A1
+*                MOVE.B  #14,D0
+*                TRAP    #15
+                MOVEM.L D2,-(SP)
                 JSR     EAGROUP9
-                
+                MOVEM.L (SP)+,D2
+                ;check if A4 is empty
+                ;if so, then an invalid mustve occured. thus go directly to NEXTIO
+                CMP.B   #$FF,(tempresult)
+                BEQ     NEXTIO
+                JSR     getSizeFormat1
+                ;compare size value here if needed
+                MOVE.B  D3,(A4)+
+                MOVE.B  #'.',(A4)+
+                MOVE.B  #'T',(A4)+
+                MOVE.B  #'O',(A4)+
+                MOVE.B  #'N',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                ;get size
+                JSR     EAOUTPUT
                 BRA     NEXTIO
                 
 getSizeFormat1
@@ -578,24 +548,66 @@ getSizeFormat1
                 LSR.L   #6,D3
                 AND.L   #%0000000011,D3 ;saves last two digits
                 CMP.B   #2,D3
-                BEQ     PRINTWORDSIZE
-                CMP.B   #1,D3
                 BEQ     PRINTLONGSIZE
-                LEA     BYTESIZE,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+                CMP.B   #1,D3
+                BEQ     PRINTWORDSIZE
+*                LEA     BYTESIZE,A1
+*                MOVE.B  #14,D0
+*                TRAP    #15
+                CLR.L    D3
+                MOVE.B   #'B',D3
+                ;MOVE.B  #'B',(A4)+
                 RTS
+                
+getSizeFormat2  ;MOVEM
+                CLR.L   D3  
+                MOVE.L  D2,D3
+                LSR.L   #6,D3
+                AND.L   #%0000000001,D3 ;saves last two digits
+                CMP.B   #0,D3
+                BEQ     PRINTWORDSIZE
+*                LEA     BYTESIZE,A1
+*                MOVE.B  #14,D0
+*                TRAP    #15
+                CLR.L    D3
+                MOVE.B   #'L',D3
+                ;MOVE.B  #'W',(A4)+
+                RTS   
+
+getSizeFormat3  ;MOVE
+                CLR.L   D3  
+                MOVE.L  D2,D3
+                LSR.L   #8,D3
+                LSR.L   #4,D3
+                AND.L   #%0011,D3 ;saves last two digits
+                CMP.B   #2,D3
+                BEQ     PRINTLONGSIZE
+                CMP.B   #3,D3
+                BEQ     PRINTWORDSIZE
+*                LEA     BYTESIZE,A1
+*                MOVE.B  #14,D0
+*                TRAP    #15
+                CLR.L    D3
+                MOVE.B   #'B',D3
+                ;MOVE.B  #'B',(A4)+
+                RTS             
     
 PRINTLONGSIZE
-                LEA     WORDSIZE,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+*                LEA     WORDSIZE,A1
+*                MOVE.B  #14,D0
+*                TRAP    #15
+                CLR.L    D3
+                MOVE.B   #'L',D3
+                ;MOVE.B  #'L',(A4)+
                 RTS  
 
 PRINTWORDSIZE
-                LEA     LONGSIZE,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+*                LEA     LONGSIZE,A1
+*                MOVE.B  #14,D0
+*                TRAP    #15
+                CLR.L    D3
+                MOVE.B   #'W',D3
+                ;MOVE.B  #'W',(A4)+
                 RTS
                 
 JSRMBRANCH      ;check 7 and 8 and make sure they are  not 11 from 7 and 8
@@ -604,17 +616,29 @@ JSRMBRANCH      ;check 7 and 8 and make sure they are  not 11 from 7 and 8
                 LSL     #6,D3
                 CMPI.W  #%0100111010,D3
                 BEQ     INVALIDBRANCH
-                LEA     JSRMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+                MOVE.B  #'R',(A4)+
+                MOVE.B  #'S',(A4)+
+                MOVE.B  #'J',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT 
                 BRA     NEXTIO
 
 LEABRANCH      ;check 7 and make sure its set to 1
                 BTST.L  #7,D2
                 BEQ     INVALIDBRANCH   ;z == 1 if bit is 0
-                LEA     LEAMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+                MOVE.B  #'A',(A4)+
+                MOVE.B  #'E',(A4)+
+                MOVE.B  #'L',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT 
                 BRA     NEXTIO
                 
 OPCODEGROUP2    JSR         NEXTFOURHEX  
@@ -631,30 +655,66 @@ OPCODEGROUP2    JSR         NEXTFOURHEX
 BRABRANCH      ;check 9 and make sure its set to 0
                 BTST.L  #9,D2
                 BNE     INVALIDBRANCH   ;z == 0 if bit is 1
-                LEA     BRAMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+*                LEA     BRAMSG,A1
+*                MOVE.B  #14,D0
+*                TRAP    #15
                 JSR     EAGROUP5
+                MOVE.B  #'A',(A4)+
+                MOVE.B  #'R',(A4)+
+                MOVE.B  #'B',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT
                 BRA     NEXTIO
                 
 BEQBRANCH
-                LEA     BEQMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+*                LEA     BEQMSG,A1
+*                MOVE.B  #14,D0
+*                TRAP    #15
                 JSR     EAGROUP5
+                MOVE.B  #'E',(A4)+
+                MOVE.B  #'Q',(A4)+
+                MOVE.B  #'B',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT
                 BRA     NEXTIO
                 
 BGTBRANCH
-                LEA     BGTMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+*                LEA     BGTMSG,A1
+*                MOVE.B  #14,D0
+*                TRAP    #15
                 JSR     EAGROUP5
+                MOVE.B  #'T',(A4)+
+                MOVE.B  #'G',(A4)+
+                MOVE.B  #'B',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT
                 BRA     NEXTIO
 BLEBRANCH
-                LEA     BLEMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+*                LEA     BLEMSG,A1
+*                MOVE.B  #14,D0
+*                TRAP    #15
                 JSR     EAGROUP5
+                MOVE.B  #'E',(A4)+
+                MOVE.B  #'L',(A4)+
+                MOVE.B  #'B',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT
                 BRA     NEXTIO
                 
 OPCODEGROUP3    
@@ -663,10 +723,18 @@ OPCODEGROUP3
                 LSR.W   #6,D3
                 AND.W   #%0000000111,D3
                 CMPI.W  #7,D3
-                BEQ     INVALIDBRANCH   
-                LEA     DIVUMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+                BEQ     INVALIDBRANCH
+                MOVE.B  #'U',(A4)+
+                MOVE.B  #'V',(A4)+
+                MOVE.B  #'I',(A4)+
+                MOVE.B  #'D',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT 
+                
                 BRA     NEXTIO
                 
 OPCODEGROUP4    ;check 7 to 8 (size) cannot be 11 AND if direction is 1 (8th bit), then 4th and 5th bit cannot be 0
@@ -693,16 +761,30 @@ SUBBRANCH3
                 BEQ     INVALIDBRANCH   ;z == 1 if bit is 0 
                 BRA     SUBBRANCH
 
-SUBBRANCH
-                LEA     SUBMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+SUBBRANCH       JSR     getSizeFormat1
+                MOVE.B  D3,(A4)+
+                MOVE.B  #'.',(A4)+
+                MOVE.B  #'B',(A4)+
+                MOVE.B  #'U',(A4)+
+                MOVE.B  #'S',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT 
                 BRA     NEXTIO
 
 OPCODEGROUP5    JSR     NEXTFOURHEX
-                JSR     NEXTNEXTFOURHEX 
-                CMPI.W  #14,D3          
-                BLE     MULSTEST      ;got to double check for this branch. too much unncertainty. MAKE SURE ITS NOT ABCD AND EXG.6,7,8 must be 111
+                ;JSR     NEXTNEXTFOURHEX 
+                
+                CLR.L   D3  
+                MOVE.W  D2,D3  
+                AND.W   #%0000000111111111,D3  
+                LSR.W   #6,D3  
+                
+                CMPI.W  #7,D3          
+                BEQ     MULSTEST      ;got to double check for this branch. too much unncertainty. MAKE SURE ITS NOT ABCD AND EXG.6,7,8 must be 111
                 BRA     ANDBRANCH       ;MUST CHECK (S cannot be 11) AND IF(D is one, must be Dn. MAKE SURE ITS NOT MULU
 
 MULSTEST      
@@ -718,9 +800,16 @@ MULSLOOP
                 ADDI    #1,D4
                 BRA     MULSLOOP
                 
-MULSBRANCH      LEA     MULSMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+MULSBRANCH      MOVE.B  #'S',(A4)+
+                MOVE.B  #'L',(A4)+
+                MOVE.B  #'U',(A4)+
+                MOVE.B  #'M',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT 
                 BRA     NEXTIO
 
 ANDBRANCH                 
@@ -731,9 +820,18 @@ ANDBRANCH
                 AND.W   #$0000000111,D3
                 CMP.W   #%111,D3
                 BEQ     INVALIDBRANCH
-                LEA     ANDMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+                JSR     getSizeFormat1
+                MOVE.B  D3,(A4)+
+                MOVE.B  #'.',(A4)+
+                MOVE.B  #'D',(A4)+
+                MOVE.B  #'N',(A4)+
+                MOVE.B  #'A',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT 
                 BRA     NEXTIO 
                 
 
@@ -749,10 +847,19 @@ OPCODEGROUP6    ;first check size
                 BTST    #8,D3
                 
 PRINTADD
-                BEQ     TESTADD   ;z == 0 if bit is 1. if bit is 1, then may be invalid                
-                LEA     ADDMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+                BEQ     TESTADD   ;z == 0 if bit is 1. if bit is 1, then may be invalid    
+                JSR     getSizeFormat1 
+                MOVE.B  D3,(A4)+           
+                MOVE.B  #'.',(A4)+
+                MOVE.B  #'D',(A4)+
+                MOVE.B  #'D',(A4)+
+                MOVE.B  #'A',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT 
                 BRA     NEXTIO
                 
 TESTADD         LSL.W   #4,D3
@@ -776,14 +883,28 @@ OPCODEGROUP7    JSR     NEXTFOURHEX
                 BNE     LSLREGBRANCH            ;z == 0 if bit is 1 
                 BRA     INVALIDBRANCH
                 
-ASLMEMBRANCH    LEA     ASLMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+ASLMEMBRANCH
+                MOVE.B  #'L',(A4)+
+                MOVE.B  #'S',(A4)+
+                MOVE.B  #'A',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT 
                 BRA     NEXTIO                
 
-LSLMEMBRANCH    LEA     LSLMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+LSLMEMBRANCH
+                MOVE.B  #'L',(A4)+
+                MOVE.B  #'S',(A4)+
+                MOVE.B  #'L',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT 
                 BRA     NEXTIO 
 
 ASLREGBRANCH    ;have to check size
@@ -791,9 +912,18 @@ ASLREGBRANCH    ;have to check size
                 AND.W   #$0000000011,D3
                 CMPI.W  #3,D3
                 BEQ     INVALIDBRANCH
-                LEA     ASLMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+                JSR     getSizeFormat1 
+                MOVE.B  D3,(A4)+ 
+                MOVE.B  #'.',(A4)+
+                MOVE.B  #'L',(A4)+
+                MOVE.B  #'S',(A4)+
+                MOVE.B  #'A',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT 
                 BRA     NEXTIO 
 
 LSLREGBRANCH    ;have to check size
@@ -801,9 +931,18 @@ LSLREGBRANCH    ;have to check size
                 AND.W   #$0000000011,D3
                 CMPI.W  #3,D3
                 BEQ     INVALIDBRANCH
-                LEA     LSLMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+                JSR     getSizeFormat1 
+                MOVE.B  D3,(A4)+ 
+                MOVE.B  #'.',(A4)+
+                MOVE.B  #'L',(A4)+
+                MOVE.B  #'S',(A4)+
+                MOVE.B  #'L',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT 
                 BRA     NEXTIO      
 
 OPCODEGROUP8    ;check dest mode does not equal to 001
@@ -814,25 +953,59 @@ OPCODEGROUP8    ;check dest mode does not equal to 001
                 AND.B   #%0111,D3
                 CMP.W   #%001,D3
                 BEQ     INVALIDBRANCH
-                LEA     MOVEMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+                JSR     getSizeFormat3
+                MOVE.B  D3,(A4)+
+                MOVE.B  #'.',(A4)+
+                MOVE.B  #'E',(A4)+
+                MOVE.B  #'V',(A4)+
+                MOVE.B  #'O',(A4)+
+                MOVE.B  #'M',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+                
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+ 
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT 
                 BRA     NEXTIO                
 
-NOOPBRANCH      LEA     NOOPMSG,A1      
-                MOVE.B  #14,D0
-                TRAP    #15
+NOOPBRANCH
+                MOVE.B  #'P',(A4)+
+                MOVE.B  #'O',(A4)+
+                MOVE.B  #'N',(A4)+
+                MOVE.B  #' ',(A4)+ 
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT                
                 BRA     NEXTIO
 
-RTSBRANCH       LEA     RTSMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+RTSBRANCH
+                MOVE.B  #'S',(A4)+
+                MOVE.B  #'T',(A4)+
+                MOVE.B  #'R',(A4)+
+                MOVE.B  #' ',(A4)+ 
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT                
                 BRA     NEXTIO
                 
-INVALIDBRANCH   LEA     INVALIDMSG,A1
-                MOVE.B  #14,D0
-                TRAP    #15
+INVALIDBRANCH   *LEA     INVALIDMSG,A1
+*                MOVE.B  #14,D0
+*                TRAP    #15
                 JSR     EAGROUPINVALID
+                MOVE.B  #'A',(A4)+
+                MOVE.B  #'T',(A4)+
+                MOVE.B  #'A',(A4)+
+                MOVE.B  #'D',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT
                 BRA     NEXTIO
                 
 NEXTFOURHEX     CLR.L   D3
@@ -850,12 +1023,24 @@ NEXTNEXTFOURHEX CLR.L   D3
 ;EA                
 ******************************************************************************************************************
 EAGROUPINVALID
-                MOVE.B      #$24,D1
-                MOVE.L      #6,D0
-                TRAP        #15
+*                MOVE.B      #$23,D1
+*                MOVE.L      #6,D0
+*                TRAP        #15
+*                MOVE.B      #$24,D1
+*                MOVE.L      #6,D0
+*                TRAP        #15
                 MOVE.L      D2,D1
                 MOVE.L      #-1,D4
+                MOVEM.L     D2-D7/A1-A3/A6,-(sp)   
+                MOVE.L      #$4,D4
                 JSR         HEXOUTPUT
+                MOVEM.L  (sp)+,D2-D7/A1-A3/A6
+                MOVE.B      #'$',(A4)+
+                MOVE.B      #'#',(A4)+
+                MOVE.B      #' ',(A4)+
+                MOVE.B      #' ',(A4)+
+                MOVE.B      #' ',(A4)+
+                MOVE.B      #' ',(A4)+
                 RTS
                 
 
@@ -867,23 +1052,6 @@ EAGROUP5
                     CMP.W       #$6000,D2 
                     BEQ         EAGROUP5_SIZEW  
                     
-                    MOVE.B      #$42,D1
-                    MOVE.L      #6,D0
-                    TRAP        #15
-                
-                    MOVE.B      #$20,D1
-                    MOVE.L      #6,D0
-                    TRAP        #15
-                    
-                    MOVE.B      #$20,D1
-                    MOVE.L      #6,D0
-                    TRAP        #15
-                    
-                                                            
-                    MOVE.L      #$24,D1
-                    MOVE.L      #6,D0
-                    TRAP        #15
-                    
                     ;byte size instruction
                     MOVE.L  A2,D1
 *                    SUBI.L  #2,D1
@@ -894,35 +1062,94 @@ EAGROUP5
                     AND.W   #$00FF,D2
                     SUB.W   D2,D1
                     MOVE.L  #8,D4
-                    MOVEM.L D2-D7/A1-A6,-(sp)
+                    MOVEM.L D2-D7/A1-A3/A6,-(sp)
                     MOVE.L  #8,D4
                     JSR     HEXOUTPUT
-                    MOVEM.L  (sp)+,D2-D7/A1-A6
+                    MOVEM.L  (sp)+,D2-D7/A1-A3/A6
+                    MOVE.B      #'$',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+
+                
+                    MOVE.B      #' ',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+                    
+                    MOVE.B      #' ',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+
+                    MOVE.B      #'B',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+                    
+                                                            
+                    MOVE.B      #'.',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+                    
                     RTS
 EAGROUP5_ADD
                     ADD.W   D2,D1
-                    MOVEM.L D2-D7/A1-A6,-(sp)
+                    MOVEM.L D2-D7/A1-A3/A6,-(sp)
                     MOVE.L  #8,D4
                     JSR     HEXOUTPUT
-                    MOVEM.L  (sp)+,D2-D7/A1-A6
-                    RTS
-            
-EAGROUP5_SIZEW
-                    MOVE.B      #$57,D1
-                    MOVE.L      #6,D0
-                    TRAP        #15
+                    MOVEM.L  (sp)+,D2-D7/A1-A3/A6
+                    MOVE.B      #'$',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+
                 
-                    MOVE.B      #$20,D1
-                    MOVE.L      #6,D0
-                    TRAP        #15
+                    MOVE.B      #' ',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
                     
-                    MOVE.B      #$20,D1
-                    MOVE.L      #6,D0
-                    TRAP        #15
+                    MOVE.B      #' ',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+
+                    MOVE.B      #'B',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
                     
-                    MOVE.L      #$24,D1
-                    MOVE.L      #6,D0
-                    TRAP        #15
+                                                            
+                    MOVE.B      #'.',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+                    
+                    RTS
+
+EAGROUP5_ADDWORD
+                    ADD.W   D2,D1
+                    MOVEM.L D2-D7/A1-A3/A6,-(sp)
+                    MOVE.L  #8,D4
+                    JSR     HEXOUTPUT
+                    MOVEM.L  (sp)+,D2-D7/A1-A3/A6
+                    MOVE.B      #'$',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+
+                
+                    MOVE.B      #' ',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+                    
+                    MOVE.B      #' ',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+
+                    MOVE.B      #'W',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+                    
+                                                            
+                    MOVE.B      #'.',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+                    
+                    RTS
+      
+EAGROUP5_SIZEW
                     
                     CLR.W    D2
                     MOVE.L   A2,D1
@@ -930,14 +1157,35 @@ EAGROUP5_SIZEW
                     MOVE.W  (A2)+,D2
                     BTST    #$15,D2
                     BTST.L  #0,D3          ;z == 0 if bit is 1 AND got to double check for this branch. too much unncertainty  
-                    BEQ     EAGROUP5_ADD
+                    BEQ     EAGROUP5_ADDWORD
                     MULS.W  #-1,D2
                     SUB.W   D2,D1
-                    MOVE.L  #8,D4
-                    MOVEM.L D2-D7/A1-A6,-(sp)
+                    MOVEM.L D2-D7/A1-A3/A6,-(sp)
                     MOVE.L  #8,D4
                     JSR     HEXOUTPUT
-                    MOVEM.L  (sp)+,D2-D7/A1-A6
+                    MOVEM.L  (sp)+,D2-D7/A1-A3/A6
+                    MOVE.B      #'$',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+
+                
+                    MOVE.B      #' ',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+                    
+                    MOVE.B      #' ',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+
+                    MOVE.B      #'W',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+                    
+                                                            
+                    MOVE.B      #'.',(A4)+
+*                    MOVE.L      #6,D0
+*                    TRAP        #15
+                    
                     RTS
                     
 EAGROUP9
@@ -955,6 +1203,7 @@ EALASTVALUE
                     BEQ     IMMEDIATEDATA
                     CMP.L   #4,D1
                     BEQ     ADDRESSDECREMENT
+                    BGT     INVALIDEAMODE
                     CMP.L   #3,D1
                     BEQ     ADDRESSINCREMENT
                     CMP.L   #2,D1
@@ -962,46 +1211,67 @@ EALASTVALUE
                     CMP.L   #1,D1
                     BEQ     DIRECTADDRESS
                     ;data reg
-                    MOVE.B  #$44,D1
-                    MOVE.L  #6,D0
-                    TRAP    #15
+
                     
                     CLR.L   D1
                     MOVE.L  D2,D1
                     AND.L   #%0000000000000111,D1
-                    ADDI.L  #$30,D1
-                    MOVE.L  #6,D0
-                    TRAP    #15
+                    
+                    ADDI.B  #$30,D1
+                    
+                    MOVE.B  D1,(A4)+
+*                    MOVE.L  #6,D0
+*                    TRAP    #15
+
+                    MOVE.B  #'D',(A4)+
+*                    MOVE.L  #6,D0
+*                    TRAP    #15
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
                     RTS
                     
 INDIRECTADDRESS  
-                    MOVE.L  #40,D1
-                    MOVE.L  #6,D0
-                    TRAP    #15
+
+*                    MOVE.L  #6,D0
+*                    TRAP    #15
                     
+                    MOVE.B  #')',(A4)+
+*                    MOVE.L  #6,D0
+*                    TRAP    #15
+
                     MOVE.L  D2,D1
                     AND.L   #%0000000000000111,D1
-                    ADDI.L  #$30,D1
-                    MOVE.L  #6,D0
-                    TRAP    #15
+                    ADDI.B  #$30,D1
+                    MOVE.B  D1,(A4)+
+
+                    MOVE.B  #'(',(A4)+
+*                    MOVE.L  #6,D0
+*                    TRAP    #15
                     
-                    MOVE.L  #41,D1
-                    MOVE.L  #6,D0
-                    TRAP    #15
-                    
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+                    
                     RTS                  
       
 DIRECTADDRESS
-                    MOVE.B  #$41,D1
-                    MOVE.L  #6,D0
-                    TRAP    #15
-                    
                     CLR.L   D1
                     MOVE.L  D2,D1
+                    
                     AND.L   #%0000000000000111,D1
-                    ADDI.L  #$30,D1
-                    MOVE.L  #6,D0
-                    TRAP    #15
+                    
+                    ADDI.B  #$30,D1
+                    MOVE.B  D1,(A4)+
+*                    MOVE.L  #6,D0
+*                    TRAP    #15
+                    
+                    MOVE.B  #'A',(A4)+
+*                    MOVE.L  #6,D0
+*                    TRAP    #15
+
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+  
                     RTS
 
               
@@ -1017,88 +1287,162 @@ IMMEDIATEDATA
                     AND.L   #%0000000000000111,D2
                     ;let d1 have the next value
                     CLR.L   D1
-                    MOVE.W  (A2)+,D1
                     CMPI.L  #0,D2
                     BEQ     PRINTWORDDATA
                     CMPI.L  #1,D2
                     BEQ     PRINTLONGDATA
                     CMPI.L  #4,D2
                     BEQ     PRINTIMMEDIATEDATA
-                    RTS         ;it should never reach here
+                    BRA     INVALIDEAMODE
+                    ;RTS         ;it should never reach here
+                    
+INVALIDMODE
+                    
                         
 PRINTWORDDATA
-                    MOVEM.L D2-D7/A1-A6,-(sp)
-                    MOVE.L  #4,D4
+                    MOVE.W  (A2)+,D1
+                    MOVEM.L D2-D7/A1-A3/A6,-(sp)
+                    MOVE.L  #$4,D4
                     JSR     HEXOUTPUT
-                    MOVEM.L  (sp)+,D2-D7/A1-A6
+                    MOVEM.L  (sp)+,D2-D7/A1-A3/A6
+                    MOVE.B  #'$',(A4)+
+                    MOVE.B  #'#',(A4)+
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+  
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+  
                     RTS
 
 PRINTLONGDATA
-                    MOVEM.L D2-D7/A1-A6,-(sp)
-                    MOVE.L  #8,D4
-                    JSR     HEXOUTPUT
-                    MOVEM.L  (sp)+,D2-D7/A1-A6
+                    MOVE.W  (A2)+,D1     
+                    CLR.L   D6
+                    MOVE.W  D1,D6
+                    MOVE.W  (A2)+,D1     
+               
+                    MOVEM.L D2-D7/A1-A3/A6,-(sp)
+                    MOVE.L   #$4,D4
+                    JSR      HEXOUTPUT
+                    MOVEM.L  (sp)+,D2-D7/A1-A3/A6
+                    
+                    
+                    MOVE.W  D6,D1
+                    CLR.L   D6
+                    
+                    MOVEM.L D2-D7/A1-A3/A6,-(sp)
+                    MOVE.L   #$4,D4
+                    JSR      HEXOUTPUT
+                    MOVEM.L  (sp)+,D2-D7/A1-A3/A6
+                    
+                    MOVE.B  #'$',(A4)+
+                    MOVE.B  #'#',(A4)+
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+  
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+  
                     RTS
   
 PRINTIMMEDIATEDATA
-                    MOVEM.L D2-D7/A1-A6,-(sp)
+                    MOVE.L  (A2)+,D1
+                    MOVEM.L D2-D7/A1-A3/A6,-(sp)
                     MOVE.L  #-1,D4
                     JSR     HEXOUTPUT
-                    MOVEM.L  (sp)+,D2-D7/A1-A6
+                    MOVEM.L  (sp)+,D2-D7/A1-A3/A6
+                    MOVE.B  #'#',(A4)+
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+  
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+  
                     RTS                  
                         
-ADDRESSINCREMENT
-                    MOVE.L  #40,D1
-                    MOVE.L  #6,D0
-                    TRAP    #15
+ADDRESSINCREMENT    
+                    MOVE.B  #'+',(A4)+
+*                    MOVE.L  #6,D0
+*                    TRAP    #15
+
+                    MOVE.B  #')',(A4)+
+*                    MOVE.L  #6,D0
+*                    TRAP    #15
                     
-                    MOVE.B  #$41,D1
-                    MOVE.L  #6,D0
-                    TRAP    #15
-                      
+
+   
                     MOVE.L  D2,D1
                     AND.L   #%0000000000000111,D1
-                    ADDI.L  #$30,D1
-                    MOVE.L  #6,D0
-                    TRAP    #15
-                    
-                    MOVE.L  #41,D1
-                    MOVE.L  #6,D0
-                    TRAP    #15
-                    
-                    MOVE.L  #43,D1
-                    MOVE.L  #6,D0
-                    TRAP    #15
-                    
+                    ADDI.B  #$30,D1
+                    MOVE.B  D1,(A4)+
+*                    MOVE.L  #6,D0
+*                    TRAP    #15
+
+                    MOVE.B  #'A',(A4)+             
+*                    MOVE.L  #6,D0
+*                    TRAP    #15
+
+                    MOVE.B  #'(',(A4)+
+*                    MOVE.L  #6,D0
+*                    TRAP    #15
+
+
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+  
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+                      
                     RTS
                     
 
-ADDRESSDECREMENT
-                                        
-                    MOVE.L  #45,D1
-                    MOVE.L  #6,D0
-                    TRAP    #15
-                    
-                    MOVE.L  #40,D1
-                    MOVE.L  #6,D0
-                    TRAP    #15
-                    
-                    MOVE.B  #$41,D1
-                    MOVE.L  #6,D0
-                    TRAP    #15
+ADDRESSDECREMENT 
+                    MOVE.B  #')',(A4)+
+*                    MOVE.L  #6,D0
+*                    TRAP    #15
                     
                     MOVE.L  D2,D1
                     AND.L   #%0000000000000111,D1
-                    ADDI.L  #$30,D1
-                    MOVE.L  #6,D0
-                    TRAP    #15
+                    ADDI.B  #$30,D1
+                    MOVE.B  D1,(A4)+
+*                    MOVE.L  #6,D0
+*                    TRAP    #15
                     
-                    MOVE.L  #41,D1
-                    MOVE.L  #6,D0
-                    TRAP    #15
+                    MOVE.B  #'A',(A4)+
+*                    MOVE.L  #6,D0
+*                    TRAP    #15
                     
+                    MOVE.B  #'(',(A4)+
+*                    MOVE.L  #6,D0
+*                    TRAP    #15
+                    
+                    MOVE.B  #'-',(A4)+
+*                    MOVE.L  #6,D0
+*                    TRAP    #15
+
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+  
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+
+                    MOVE.B  #' ',(A4)+                      
                     RTS
-            
+
+
+INVALIDEAMODE
+                JSR     EAGROUPINVALID
+                MOVE.B  #'A',(A4)+
+                MOVE.B  #'T',(A4)+
+                MOVE.B  #'A',(A4)+
+                MOVE.B  #'D',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                JSR     OUTPUTADDRESS
+                JSR     EAOUTPUT
+                RTS
+                ;we need       one rts. this rts will return to its original branch
+                ;so if we go to this branch and print data and hten rts, it will print that opcode as well
+                ; need a mechanism which willl till original branch that an invalid has occured
+                ; maybe use D4?     we can do this by checking if A4 is empty. in good case, A4 will be filled.
+                ; in bad case it will be cleared. this works well since EA is being put into string stack initially.
+                ; thus for every branch, we need to check if A4 is empty AFRTER being called 
 *FORMAT1         
 *FORMAT2
 *FORMAT3
@@ -1124,12 +1468,49 @@ ADDRESSDECREMENT
 *EAGRP8
 *EAGRP9
 *EAGRP10
-
 ;I/O         
 ******************************************************************************************************************
+EAOUTPUT
+                ;LEA        $900,A5
+                LEA        base16value,A5
+                CLR.L      D1
+                BRA        REVERSEIT
+
+
+                
+REVERSEIT
+                MOVE.B     -(A4),D1        ;code to reverse string
+                CMP        #$A,D1        
+                BEQ        FINAL
+                MOVE.B     D1,(A5)+
+                ADD.B      #1,D4
+                BRA        REVERSEIT   
+                
+                
+FINAL           
+
+                MOVE.B      #0,(A5)+        ;add NULL ASCII CHAR
+
+*                LEA $900, A1 ; display the string stored at "base16value"
+                LEA  base16value,A1
+                MOVE.L #14,D0       ; task number #13
+                TRAP #15            ; call TRAP #15 function        
+                
+                ;CLEARBUFFER
+CLEANIT
+                MOVE.B     #$FF,-(A5)
+                MOVE.B     #$FF,(A4)+
+                CMP        #$0,D4        
+                BEQ        FINALRTS               
+                ADD.B      #-1,D4
+                BRA        CLEANIT
+                
+FINALRTS               
+                RTS
+            
 NEXTIO          CLR.L     D3
                 CLR.L     D4 
-
+                
                 LEA     CLR,A1   ;Display intro message
                 MOVE.B  #14,D0 
                 TRAP    #15
@@ -1242,13 +1623,14 @@ SPACEMSG            DC.B    '   ',0
 WORDSIZE            DC.B    'W  ',0
 BYTESIZE            DC.B    'B  ',0
 LONGSIZE            DC.B    'L  ',0
-tempresult DS.B 10      ; variable to save temporary result
-base16value DS.B 10     ; variable to save the final result
+tempresult          DS.L    10      ; variable to save temporary result
+base16value         DS.L    10     ; variable to save the final result
 
 
 * Put variables and constants here
 
     END    START        ; last line of source
+
 
 
 
