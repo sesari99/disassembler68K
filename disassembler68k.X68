@@ -16,8 +16,31 @@ pro
                  ;MOVE.B  D2,D3          
                  ;MOVEA #$00000047,A0 ;should be data
                  
-                 ;OPCODEGROUP1.1 TEST
-                 ;MOVEM.W D3,-(A5)   
+                 ;OPCODEGROUP1.1 TEST 
+                 MOVEM.W D0,-(A5)
+                 MOVEM.W D1,-(A5)
+                 MOVEM.W D2,-(A5) 
+                 MOVEM.W D7,-(A5)
+                 
+                 MOVEM.W A0,-(A5) 
+                 MOVEM.W A1,-(A5) 
+                 MOVEM.W A2,-(A5) 
+                 MOVEM.W A7,-(A5)
+                 MOVEM.W D0-D7/A0-A7,-(A5)    
+                 MOVEM.W D1-D4/A2-A5,-(A5) 
+
+                 MOVEM.W (A5)+,D0
+                 MOVEM.W (A5)+,D1
+                 MOVEM.W (A5)+,D2
+                 MOVEM.W (A5)+,D7
+                 MOVEM.W (A5)+,A0
+                 MOVEM.W (A5)+,A1 
+                 MOVEM.W (A5)+,A2
+                 MOVEM.W (A5)+,A7  
+                 MOVEM.W (A5)+,D0-D7/A0-A7 ;D7 not printing
+                 MOVEM.W (A5)+,D1-D4/A2-A5
+
+                 
                  ;JMP    pa      ;should be data (not wokring)
                  
                  ;OPCODEGROUP6 TEST
@@ -31,15 +54,15 @@ pro
                  ;SUBA   D3,A3          ;should be data
                  
                  ;OPCODEGROUP5 TEST
-                 ;MULS  D2,D3 
+                 MULS  D2,D3 
                  ;MULU  D2,D3           ;should be data (not working)
                  
                  ;OPCODEGROUP3 TEST
-                 ;DIVU  D2,D3 
+                 DIVU  D2,D3 
                  ;DIVS  D2,D3           ;should be data
                  
                  ;OPCODEGROUP1.5 TEST
-                 ;LEA   $2000,A2  
+                 LEA   $2000,A2  
                  
                  ;OPCODEGROUP5 TEST
                  ;AND   #3,D3            
@@ -54,17 +77,17 @@ pro
                  ;MOVE  D3,SR           ;should be data (not working)
 
                  
-                 ;OPCODEGROUP7.2 TEST
-                 ;LSL   #2,D3 
+                 ;OPCODEGROUP7.1.1 TEST  REG SHIFT
+                 ;LSL.B   #2,D3 
                  
-                 ;OPCODEGROUP7.1 TEST
-                 ;ASL   #2,D3 
+                 ;OPCODEGROUP7.1.2 TEST   REG SHIFT
+                 ;ASL.B   #2,D3 
                  
-                 ;OPCODEGROUP7.3.2 TEST
-                 ;LSL   (A0)+ 
-                 
-                 ;OPCODEGROUP7.3.1 TEST                 
-                 ;ASL   (A0)+ 
+                 ;OPCODEGROUP7.3.2 TEST     MEM SHIFT
+                 LSL   (A0)+ 
+                
+                 ;OPCODEGROUP7.3.1 TEST       MEM SHIFT           
+                 ASL   (A0)+ 
                  
                 ;OPCODEGROUP2.3 TEST
                  BGT   pa
@@ -82,7 +105,7 @@ po
                  RTS
 
 pe               ;OPCODEGROUP1.4 TEST
-;                JSR   po   
+                JSR   (A1)
 
                 
                 
@@ -91,36 +114,43 @@ pe               ;OPCODEGROUP1.4 TEST
 START:                  ; first instruction of program   
 
 ;inputs for testing are  here:    
+
                 LEA     WELMSG,A1   ;Display intro message
                 MOVE.B  #14,D0 
                 TRAP    #15
                 
+STARTMENU
+                MOVEM.L     D0-D7/A1-A6,-(sp)   
 
 INPUT1                                   
                 LEA     MSGINPUT ,A1     ;Ask for first input
                 MOVE.B  #14,D0          
                 TRAP    #15       
                 
-                LEA     $9000,A1
+                LEA     IOVariable,A1
                 
                 MOVE.W  #2,D0           ;had to specify or it wont work properly
-                TRAP    #15    
+                TRAP    #15
                 BRA     FOR_LOOP 
                 
 INPUT2          LEA     MSGINPUT2,A1    ;Ask for second input
                 MOVE.B  #14,D0
                 TRAP    #15
-                
-                LEA     $9000,A1
+                LEA     IOVariable,A1
                 
                 MOVE.W  #2,D0
                 TRAP    #15
                 BRA     FOR_LOOP
+                
                               
 FOR_LOOP        CMP.B   D1,D3
                 BEQ     CHECKNEG
                 CLR.W   D6               
                 ADD.B  (A1)+,D6
+                CMP.B   #$51,D6
+                BEQ     ENDPROGRAM
+                CMP.B   #$71,D6
+                BEQ     ENDPROGRAM
                 CMP.B   #$30,D6
                 BLT     BADINPUT
                 CMP.B   #$39,D6
@@ -357,19 +387,30 @@ FEEDOPCODE
                 MOVEM.L     D1/D3-D7/A1-A6,-(sp) 
                 BRA         OPCODETIME
                 
-OUTPUTADDRESS                
-                ************* printing out address location
+OUTPUTADDRESS               
+                ;now do the first half
                 MOVE.L      D1,D4
                 MOVE.L      A2,D1
                 SUB.L       #$2,D1
+                AND.L       #$0000FFFF,D1
                 MOVEM.L     D2-D7/A1-A3/A6,-(sp)   
-                MOVE.L      #$8,D4 ;10
+                MOVE.L      #$4,D4 ;10
                 JSR         HEXOUTPUT
                 MOVEM.L    (sp)+,D2-D7/A1-A3/A6 ;I/O gets his stuff back
+                
+                CLR.L       D1
+                MOVE.L      A2,D1
+                SUB.L       #$2,D1
+                CLR.W       D1
+                SWAP        D1
+                MOVEM.L     D2-D7/A1-A3/A6,-(sp)   
+                MOVE.L      #$4,D4 ;10
+                JSR         HEXOUTPUT
+                MOVEM.L    (sp)+,D2-D7/A1-A3/A6 ;I/O gets his stuff back
+
                 MOVE.L      D4,D1
                 CLR.W       D4   
                 RTS
-
 
                 
 HEXOUTPUT      ;used D1(value being outpueed), D3 (D1 temp), D6 (char counter), A1(string buffer), A2 (string buffer), D4(0 size).
@@ -492,6 +533,8 @@ OPCODEGROUP1    JSR         NEXTFOURHEX
                 BRA         INVALIDBRANCH
                 
 MOVEMBRANCH     CLR.L   D3
+                JSR     EAGROUP7
+                MOVE.B  #' ',(A4)+
                 JSR     getSizeFormat2
                 MOVE.B  D3,(A4)+
                 MOVE.B  #'.',(A4)+
@@ -616,6 +659,7 @@ JSRMBRANCH      ;check 7 and 8 and make sure they are  not 11 from 7 and 8
                 LSL     #6,D3
                 CMPI.W  #%0100111010,D3
                 BEQ     INVALIDBRANCH
+                JSR     EAGROUP9
                 MOVE.B  #'R',(A4)+
                 MOVE.B  #'S',(A4)+
                 MOVE.B  #'J',(A4)+
@@ -630,6 +674,9 @@ JSRMBRANCH      ;check 7 and 8 and make sure they are  not 11 from 7 and 8
 LEABRANCH      ;check 7 and make sure its set to 1
                 BTST.L  #7,D2
                 BEQ     INVALIDBRANCH   ;z == 1 if bit is 0
+                JSR     EAGROUP4LEA
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
                 MOVE.B  #'A',(A4)+
                 MOVE.B  #'E',(A4)+
                 MOVE.B  #'L',(A4)+
@@ -675,8 +722,8 @@ BEQBRANCH
 *                MOVE.B  #14,D0
 *                TRAP    #15
                 JSR     EAGROUP5
-                MOVE.B  #'E',(A4)+
                 MOVE.B  #'Q',(A4)+
+                MOVE.B  #'E',(A4)+
                 MOVE.B  #'B',(A4)+
                 MOVE.B  #' ',(A4)+
                 MOVE.B  #' ',(A4)+
@@ -724,6 +771,9 @@ OPCODEGROUP3
                 AND.W   #%0000000111,D3
                 CMPI.W  #7,D3
                 BEQ     INVALIDBRANCH
+                JSR     EAGROUP4ALL
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
                 MOVE.B  #'U',(A4)+
                 MOVE.B  #'V',(A4)+
                 MOVE.B  #'I',(A4)+
@@ -800,7 +850,10 @@ MULSLOOP
                 ADDI    #1,D4
                 BRA     MULSLOOP
                 
-MULSBRANCH      MOVE.B  #'S',(A4)+
+MULSBRANCH      JSR     EAGROUP4ALL
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #' ',(A4)+
+                MOVE.B  #'S',(A4)+
                 MOVE.B  #'L',(A4)+
                 MOVE.B  #'U',(A4)+
                 MOVE.B  #'M',(A4)+
@@ -884,6 +937,7 @@ OPCODEGROUP7    JSR     NEXTFOURHEX
                 BRA     INVALIDBRANCH
                 
 ASLMEMBRANCH
+                JSR     EAGROUP9
                 MOVE.B  #'L',(A4)+
                 MOVE.B  #'S',(A4)+
                 MOVE.B  #'A',(A4)+
@@ -896,6 +950,7 @@ ASLMEMBRANCH
                 BRA     NEXTIO                
 
 LSLMEMBRANCH
+                JSR     EAGROUP9
                 MOVE.B  #'L',(A4)+
                 MOVE.B  #'S',(A4)+
                 MOVE.B  #'L',(A4)+
@@ -912,8 +967,6 @@ ASLREGBRANCH    ;have to check size
                 AND.W   #$0000000011,D3
                 CMPI.W  #3,D3
                 BEQ     INVALIDBRANCH
-                JSR     getSizeFormat1 
-                MOVE.B  D3,(A4)+ 
                 MOVE.B  #'.',(A4)+
                 MOVE.B  #'L',(A4)+
                 MOVE.B  #'S',(A4)+
@@ -931,8 +984,6 @@ LSLREGBRANCH    ;have to check size
                 AND.W   #$0000000011,D3
                 CMPI.W  #3,D3
                 BEQ     INVALIDBRANCH
-                JSR     getSizeFormat1 
-                MOVE.B  D3,(A4)+ 
                 MOVE.B  #'.',(A4)+
                 MOVE.B  #'L',(A4)+
                 MOVE.B  #'S',(A4)+
@@ -1049,8 +1100,15 @@ EAGROUPINVALID
 EAGROUP5
 ;d1 stores address and d2 holds displacement value. 
                     
+;6000
                     CMP.W       #$6000,D2 
                     BEQ         EAGROUP5_SIZEW  
+                    CMP.W       #$6E00,D2 
+                    BEQ         EAGROUP5_SIZEW 
+                    CMP.W       #$6F00,D2 
+                    BEQ         EAGROUP5_SIZEW  
+                    CMP.W       #$6700,D2 
+                    BEQ         EAGROUP5_SIZEW   
                     
                     ;byte size instruction
                     MOVE.L  A2,D1
@@ -1193,6 +1251,156 @@ EAGROUP9
                     JSR     EALASTVALUE
                     RTS
                     
+EAGROUP7
+                    CLR.L   D1  ;byte holder               CLR.L   D1  ;byte holder
+                    CLR.L   D6  ;loop counter
+                    MOVE.L  #15,D6   ;max 15
+                    BTST.L  #10,D2
+                    BEQ     EAGROUP7POST ;z == 0 if bit is 1, which is memory to register (post increment). do reg scan last, which is done first
+                    MOVE.W  (A2),D1
+                    ;else do src first
+REVERSELOOP1
+                   BTST     D6,D1
+                   BEQ      SKIPRVRSLOOP
+                   SUBI.B   #8,D6
+                   AND.B    #$0F,D6
+                   ADDI.B   #$30,D6
+                   MOVE.B   D6,(A4)+
+                   SUBI.B   #$30,D6
+                   ADDI     #8,D6
+                   MOVE.B   #'A',(A4)+
+                   MOVE.B   #'/',(A4)+
+SKIPRVRSLOOP
+                   SUBI.B   #1,D6
+                   AND.B    #$0F,D6
+                   CMPI     #8,D6
+                   BNE      REVERSELOOP1
+                   BEQ      REVERSELOOPSPC
+                   
+REVERSELOOPSPC     SUBI.B   #1,D6
+                   BTST     #8,D1
+                   BEQ      REVERSELOOP2
+                   MOVE.B   #$30,(A4)+
+                   MOVE.B   #'A',(A4)+
+                   MOVE.B   #'/',(A4)+
+                   ;SUBI.B   #1,D6
+                   
+
+REVERSELOOP2       
+                   BTST     D6,D1
+                   BEQ      SKIPFRVRSLOOP2
+                   ADDI.B   #$30,D6
+                   MOVE.B   D6,(A4)+
+                   SUBI.B   #$30,D6
+                   MOVE.B   #'D',(A4)+
+                   MOVE.B   #'/',(A4)+
+SKIPFRVRSLOOP2
+                   SUBI     #1,D6
+                   CMPI     #0,D6
+                   BGE      REVERSELOOP2
+                   MOVE.B   -(A4),D6
+                   CLR.L    D6
+                   MOVE.B   #',',(A4)+
+                   JSR     EAGROUP9
+                   RTS
+
+                    
+                    
+EAGROUP7POST                             
+                   JSR     EAGROUP9
+                   MOVE.W  (A2),D1
+                   MOVE.B   #',',(A4)+
+                   MOVE.L  #15,D6   ;max 15
+
+
+
+FRWRDLOOP1         
+                   CMPI     #15,D6
+                   BEQ      FORWARDLOOP2SPC
+                   BTST     D6,D1
+                   BEQ      SKIPFRWRDSLOOP
+                   MOVE.L   D6,D3
+                   SUBI.B   #15,D6
+                   MULS     #-1,D6
+                   AND.L    #$0000000F,D6
+                   ADDI.B   #$30,D6
+                   MOVE.B   D6,(A4)+
+                   SUBI.B   #$30,D6
+                   MOVE.B   #'D',(A4)+
+                   MOVE.B   #'/',(A4)+
+                   MOVE.L   D3,D6
+SKIPFRWRDSLOOP
+                   SUB.B    #1,D6
+                   CMPI     #7,D6
+                   BNE      FRWRDLOOP1
+                   BEQ      FORWARDLOOP2SET
+                   
+FORWARDLOOP2SPC
+                   BTST     #15,D1
+                   BEQ      SKIPFRWRDSLOOP
+                   MOVE.B   #$30,(A4)+
+                   MOVE.B   #'D',(A4)+
+                   MOVE.B   #'/',(A4)+  
+                   BRA      SKIPFRWRDSLOOP
+
+FORWARDLOOP2SET     
+                   CLR.L    D3
+                   
+FORWARDLOOP2
+                   BTST     D6,D1
+                   BEQ      SKIPFRWRDSLOOP2
+                   CMP.L    #0,D6
+                   BEQ      SKIPFRWRDSLOOP2SPC
+                   MOVE.L   D6,D3
+                   
+                   SUBI.B   #7,D6
+                   MULS     #-1,D6
+                   AND.L    #$0000000F,D6                
+
+                   ADDI.B   #$30,D6
+                   MOVE.B   D6,(A4)+
+                   SUBI.B   #$30,D6
+                   MOVE.B   #'A',(A4)+
+                   MOVE.B   #'/',(A4)+
+                   MOVE.L   D3,D6
+SKIPFRWRDSLOOP2
+                   SUBI.B   #1,D6
+                   CMPI     #$FF,D6
+                   BNE      FORWARDLOOP2
+                   MOVE.B   -(A4),D6
+                   CLR.L    D6
+                   RTS
+
+SKIPFRWRDSLOOP2SPC  MOVE.B   #$37,(A4)+
+                    MOVE.B   #'A',(A4)+
+                    MOVE.B   #'/',(A4)+
+                    BRA     SKIPFRWRDSLOOP2
+
+
+EAGROUP4ALL          ;everything except LEA
+                    CLR.L   D1
+                    JSR     CONSTANTREG
+                    MOVE.B  #'D',(A4)+
+                    MOVE.B  #',',(A4)+
+                    BRA     EAGROUP9
+                    
+EAGROUP4LEA          ;ONLY FOR LEA
+                    CLR.L   D1
+                    JSR     CONSTANTREG
+                    MOVE.B  #'A',(A4)+
+                    MOVE.B  #',',(A4)+
+                    BRA     EAGROUP9
+                    
+CONSTANTREG
+                   MOVE.L   D2,D1
+                   ;we just want the 11th - 9th bit
+                   AND.L    #%0000111000000000,D1
+                   LSR.L    #8,D1
+                   LSR.L    #1,D1
+                   ADDI.B  #$30,D1
+                   MOVE.B  D1,(A4)+
+                   RTS
+                    
 EALASTVALUE
                     *check if mode respects register value
                     *if not branch out to immediate data
@@ -1244,7 +1452,8 @@ INDIRECTADDRESS
                     AND.L   #%0000000000000111,D1
                     ADDI.B  #$30,D1
                     MOVE.B  D1,(A4)+
-
+                    
+                    MOVE.B  #'A',(A4)+
                     MOVE.B  #'(',(A4)+
 *                    MOVE.L  #6,D0
 *                    TRAP    #15
@@ -1258,7 +1467,9 @@ DIRECTADDRESS
                     CLR.L   D1
                     MOVE.L  D2,D1
                     
+                    
                     AND.L   #%0000000000000111,D1
+                    
                     
                     ADDI.B  #$30,D1
                     MOVE.B  D1,(A4)+
@@ -1296,8 +1507,6 @@ IMMEDIATEDATA
                     BRA     INVALIDEAMODE
                     ;RTS         ;it should never reach here
                     
-INVALIDMODE
-                    
                         
 PRINTWORDDATA
                     MOVE.W  (A2)+,D1
@@ -1306,7 +1515,6 @@ PRINTWORDDATA
                     JSR     HEXOUTPUT
                     MOVEM.L  (sp)+,D2-D7/A1-A3/A6
                     MOVE.B  #'$',(A4)+
-                    MOVE.B  #'#',(A4)+
                     MOVE.B  #' ',(A4)+
                     MOVE.B  #' ',(A4)+  
                     MOVE.B  #' ',(A4)+
@@ -1335,7 +1543,6 @@ PRINTLONGDATA
                     MOVEM.L  (sp)+,D2-D7/A1-A3/A6
                     
                     MOVE.B  #'$',(A4)+
-                    MOVE.B  #'#',(A4)+
                     MOVE.B  #' ',(A4)+
                     MOVE.B  #' ',(A4)+  
                     MOVE.B  #' ',(A4)+
@@ -1346,10 +1553,11 @@ PRINTLONGDATA
 PRINTIMMEDIATEDATA
                     MOVE.L  (A2)+,D1
                     MOVEM.L D2-D7/A1-A3/A6,-(sp)
-                    MOVE.L  #-1,D4
+                    MOVE.L  #4,D4
                     JSR     HEXOUTPUT
                     MOVEM.L  (sp)+,D2-D7/A1-A3/A6
                     MOVE.B  #'#',(A4)+
+                    MOVE.B  #'$',(A4)+
                     MOVE.B  #' ',(A4)+
                     MOVE.B  #' ',(A4)+  
                     MOVE.B  #' ',(A4)+
@@ -1517,7 +1725,7 @@ NEXTIO          CLR.L     D3
                               
                 MOVEM.L  (sp)+,D1/D3-D7/A1-A6 ;I/O gets his stuff back
                 CMP.L    A3,A2  ;we dont need more machine language once we have reached the the destination
-                BGT      END ;so when equal, we are done
+                BGT      ENDPAGE ;so when equal, we are done
                 CMPI.B   #1,D5 ;hard cded page limit for first page
                 BEQ      SECONDPAGE
                 CMP.L    #1,D1
@@ -1531,18 +1739,18 @@ SECONDPAGE
                 ;check if user wants new page. if no exit. if yes continue to feedopcode.
 NEWPAGELOOP
                 MOVE.B   #1,D5
-                LEA     $9000,A1          ;had to specify or it wont work properly                 
+                LEA     IOVariable,A1          ;had to specify or it wont work properly                 
                 LEA     NEWPAGEMSG,A1     
                 MOVE.W  #14,D0          
                 TRAP    #15 
                 
-                LEA     $9000,A1          ;had to specify or it wont work properly                 
+                LEA     IOVariable,A1          ;had to specify or it wont work properly                 
                 MOVE.W  #2,D0           ;had to specify or it wont work properly
                 TRAP    #15  
                 
                 MOVE.B  (A1),D3
                 
-                LEA     $9000,A1          ;had to specify or it wont work properly
+                LEA     IOVariable,A1          ;had to specify or it wont work properly
                 CMP.B   #$59,D3
                 BEQ     FEEDOPCODE
                 CMP.B   #$79,D3
@@ -1550,27 +1758,30 @@ NEWPAGELOOP
                 CMP.B   #$0,D3
                 BEQ     FEEDOPCODE
                 CMP.B   #$4E,D3
-                BEQ     END
+                BEQ     ENDPAGE 
                 CMP.B   #$6E,D3
-                BEQ     END
+                BEQ     ENDPAGE 
                 
-                LEA     $9000,A1          ;had to specify or it wont work properly
+                LEA     IOVariable,A1          ;had to specify or it wont work properly
                 LEA     BADCHARACTER,A1     
                 MOVE.W  #13,D0          
                 TRAP    #15
                 
                 BRA     NEWPAGELOOP  
                 ******************************************************************************************************************
-END 
-                LEA     CLR,A1     ;Ask for first input
-                MOVE.B  #14,D0          
-                TRAP    #15 
+ENDPAGE                 
+                MOVEM.L     (SP)+,D0-D7/A1-A6 ;start from scratch, all 0s
+                BRA         STARTMENU
+ 
+                
+ENDPROGRAM              
                 LEA     ENDMSG,A1     
                 MOVE.W  #13,D0          
-                TRAP    #15  
- 
+                TRAP    #15
+                
                 MOVE.W  #9,D0          
-                TRAP    #15                             
+                TRAP    #15    
+                         
                 SIMHALT             ; halt simulator
     
 CR                  EQU     $0A
@@ -1587,14 +1798,18 @@ WELMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                     DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',CR,LF,CR,LF, 0
 LINE_COUNT          DS.B    1
 
-MSGINPUT            DC.B    'Please enter first memory address: $',0
-MSGINPUT2           DC.B    'Please enter second memory address: $',0
+MSGINPUT            DC.B    'Please enter first memory address  (''Q'' to quit): $',0
+MSGINPUT2           DC.B    'Please enter second memory address (''Q'' to quit): $',0
 BADVALUE            DC.L    'INPUT VALUE EXCEEDS 32 BIT RANGE!',CR,LF,0
 BADCHARACTER        DC.L    'INPUT HAS ILLEGAL CHARACTER!',CR,LF,0
 BADADDRESS          DC.L    'SOURCE ADDRESS CANNOT BE BIGGER THEN DESTINATION ADDRESS!',CR,LF,0
 VALUETOOLOW         DC.L    'VALUE TOO LOW!',CR,LF,0
 NEWPAGEMSG          DC.L    'ENTER TO CONTINUE... ',CR,LF,0
+
+NEWPROGMSG          DC.L    'STARTOVER? [Y|N]: ',CR,LF,0
+
 ENDMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    END    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',0
+
 PLUSMSG             DC.B    '+',0
 NEGMSG              DC.B    '-',0
 CLR                 DC.B    CR,LF,0
@@ -1623,22 +1838,10 @@ SPACEMSG            DC.B    '   ',0
 WORDSIZE            DC.B    'W  ',0
 BYTESIZE            DC.B    'B  ',0
 LONGSIZE            DC.B    'L  ',0
-tempresult          DS.L    10      ; variable to save temporary result
-base16value         DS.L    10     ; variable to save the final result
-
+tempresult          DS.L    50      ; variable to save temporary result
+base16value         DS.L    50     ; variable to save the final result
+IOVariable          DS.L    10     ; variable to save the final result
 
 * Put variables and constants here
 
     END    START        ; last line of source
-
-
-
-
-
-
-
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
