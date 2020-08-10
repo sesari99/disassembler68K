@@ -19,7 +19,7 @@
                  ;JMP    pa      ;should be data (not wokring)
                  
                  
-                 ;ADD   D2,D3 
+                 ADD   D2,D3 
                  ;ADDX   -(A2),-(A3)    ;should be data (not working)
                  ;ADDA   D3,A3          ;should be data
                  
@@ -590,7 +590,8 @@ PRINTADD
                 LEA     ADDMSG,A1
                 MOVE.B  #14,D0
                 TRAP    #15
-                BRA     NEXTIO
+                BRA     FORMAT1
+                ;BRA     NEXTIO
                 
 TESTADD         LSL.W   #4,D3
                 AND.W   #%00000000000110000,D3
@@ -700,11 +701,24 @@ NEXTNEXTFOURHEX CLR.L   D3
 ;INCORRECT INTERPRETATION, IF ASSUMED DIRECTION 0: ADD.W $500, D1
 
 
-*FORMAT1
-*what is direction
-;^detect first
-;IF 0, DN is destination; BRA DIRECTION0
-;IF 1, DN IS SOURCE; CONTINUE
+FORMAT1           MOVE.W     D2,D3
+                  DIVS.W     #2,D3
+                  ASR.L      #8,D3            ;remainder isolated 
+                  ASR.L      #8,D3            ;NOW
+                  CMP        #1,D3            *what is direction
+                  BLT        BRADIRECTION0    ;IF 0, DN is destination; BRA DIRECTION0  
+                  
+                  MOVE.W     D2,D3
+                  ASR.L      #2,D3
+                  LEA        OPERANDVAR,A1
+                  MOVE.B     #68,(A1)+
+
+                  MOVE.W     D3,(A1)+
+                  
+                  MOVE.B     #14,D0
+                  TRAP       #15
+        
+                  
 
 *what is Dn
 ;^for Dn, 
@@ -713,7 +727,13 @@ NEXTNEXTFOURHEX CLR.L   D3
 *what is mode
 *what is XN  
 ;^for Xn
-;BRA OPERAND-...[XN DEPENDS ON TYPE]
+;BRA OPERAND-...[XN DEPENDS ON TYPE]                                              ;IF 1, DN IS SOURCE; CONTINUE 
+                  
+                  
+
+BRADIRECTION0                                
+
+
 
 *FORMAT1DIRECTION0
 *what is mode
@@ -847,28 +867,33 @@ CLR                 DC.B    CR,LF,0
 NOOPMSG             DC.B    'NOOP',CR,LF,0
 RTSMSG              DC.B    'RTS',CR,LF,0
 
-MOVEMMSG            DC.B    'MOVEM.',CR,LF,0
-MOVEMSG             DC.B    'MOVE.',CR,LF,0
-LEAMSG              DC.B    'LEA',CR,LF,0
-NOTMSG              DC.B    'NOT',CR,LF,0
-JSRMSG              DC.B    'JSR',CR,LF,0
-BGTMSG              DC.B    'BGT',CR,LF,0
-BLEMSG              DC.B    'BLE',CR,LF,0
-BEQMSG              DC.B    'BEQ',CR,LF,0
-BRAMSG              DC.B    'BRA',CR,LF,0
-DIVUMSG             DC.B    'DIVU.',CR,LF,0
-SUBMSG              DC.B    'SUB.',CR,LF,0
-MULSMSG             DC.B    'MULS.',CR,LF,0
-ANDMSG              DC.B    'AND.',CR,LF,0
-ADDMSG              DC.B    'ADD.',CR,LF,0
-LSLMSG              DC.B    'LSL.',CR,LF,0
-ASLMSG              DC.B    'ASL.',CR,LF,0
+MOVEMMSG            DC.B    'MOVEM.',0
+MOVEMSG             DC.B    'MOVE.',0
+LEAMSG              DC.B    'LEA',0
+NOTMSG              DC.B    'NOT',0
+JSRMSG              DC.B    'JSR',0
+BGTMSG              DC.B    'BGT',0
+BLEMSG              DC.B    'BLE',0
+BEQMSG              DC.B    'BEQ',0
+BRAMSG              DC.B    'BRA',0
+DIVUMSG             DC.B    'DIVU.',0
+SUBMSG              DC.B    'SUB.',0
+MULSMSG             DC.B    'MULS.',0
+ANDMSG              DC.B    'AND.',0
+ADDMSG              DC.B    'ADD.',0
+LSLMSG              DC.B    'LSL.',0
+ASLMSG              DC.B    'ASL.',0
 INVALIDMSG          DC.B    'DATA',CR,LF,0
 EVENINPUTMSG        DC.B    'INPUT VALUE IS EVEN!',0
+
+
+OPERANDVAR          DS.B    10
+OPCODEVAR           DS.B    10
 
 * Put variables and constants here
 
     END    START        ; last line of source
+
 
 
 
