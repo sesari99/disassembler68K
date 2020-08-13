@@ -79,9 +79,10 @@ pro
                  
                  ;OPCODEGROUP7.1.1 TEST  REG SHIFT
                  ;LSL.B   #2,D3 
+                 LSL.L   D0,D5 
                  
                  ;OPCODEGROUP7.1.2 TEST   REG SHIFT
-                 ;ASL.B   #2,D3 
+                 ASL.B   #2,D3 
                  
                  ;OPCODEGROUP7.3.2 TEST     MEM SHIFT
                  LSL   (A0)+ 
@@ -923,12 +924,12 @@ TESTADD         LSL.W   #4,D3
                 
 
 
-OPCODEGROUP7    JSR     NEXTFOURHEX
+OPCODEGROUP7    JSR     NEXTNEXTFOURHEX 
                 ;by this point we cleared D3 and have have the next four hex value in D3 
-                CMPI.W  #1,D3
-                BLE     ASLMEMBRANCH
+                ASR.L   #2,D3
                 CMPI.W  #3,D3
-                BLE     LSLMEMBRANCH
+                BEQ     ASLMEMBRANCH
+                
                 CLR.L   D3
                 MOVE.W  D2,D3
                 BTST    #3,D3
@@ -937,6 +938,12 @@ OPCODEGROUP7    JSR     NEXTFOURHEX
                 BRA     INVALIDBRANCH
                 
 ASLMEMBRANCH
+                CLR.L   D3
+                JSR     NEXTFOURHEX
+                ASR.L   #1,D3
+                CMPI.W  #0,D3
+                BNE     LSLMEMBRANCH
+                
                 JSR     EAGROUP9
                 MOVE.B  #'L',(A4)+
                 MOVE.B  #'S',(A4)+
@@ -967,6 +974,8 @@ ASLREGBRANCH    ;have to check size
                 AND.W   #$0000000011,D3
                 CMPI.W  #3,D3
                 BEQ     INVALIDBRANCH
+                JSR     getSizeFormat1
+                MOVE.B  D3,(A4)+
                 MOVE.B  #'.',(A4)+
                 MOVE.B  #'L',(A4)+
                 MOVE.B  #'S',(A4)+
@@ -984,6 +993,8 @@ LSLREGBRANCH    ;have to check size
                 AND.W   #$0000000011,D3
                 CMPI.W  #3,D3
                 BEQ     INVALIDBRANCH
+                JSR     getSizeFormat1
+                MOVE.B  D3,(A4)+
                 MOVE.B  #'.',(A4)+
                 MOVE.B  #'L',(A4)+
                 MOVE.B  #'S',(A4)+
