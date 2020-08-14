@@ -1101,20 +1101,24 @@ EAGROUPINVALID
 
 ;EAGROUP8
             
-get0to2        *src register      
-                MOVE.W   D3,D7                                            
+get0to2        *src register 
+                MOVE.W  D2,D7     
+                ASL.W   #3,D7                                            
                 RTS
 
-get3to5        *src addressing    
-                MOVE.W   D3,D7                                           
+get3to5        *src addressing
+                MOVE.W D2,D7    
+                                                           
                 RTS   
 
-get6to8        *dest addressing       
-                MOVE.W   D3,D7                                            
+get6to8        *dest addressing
+                MOVE.W D2,D7       
+                                                            
                 RTS
 
 get9to11       *dest register    
-                MOVE.W   D3,D7                                                         
+                MOVE.W D2,D7
+                                                                         
                 RTS             
 
 CONVERT_MODE_REG    *converts mode and register
@@ -1240,7 +1244,7 @@ GET_IMMEDIATE   *find out what immediate value is
                 
 IMM_WORD        CLR         D1
                 MOVE.W      (A6)+,D1         
-                BSR         HEXOUTPUT
+                JSR         HEXOUTPUT
                 RTS
                 
 IMM_LONG        BSR         IMM_WORD
@@ -1248,7 +1252,7 @@ IMM_LONG        BSR         IMM_WORD
                 RTS
                 
 
-EAGROUP8
+EAGROUP8     
                 BSR     get6to8            *get dest addressing
                 MOVE.L  D7,D5
                 
@@ -1260,7 +1264,7 @@ EAGROUP8
 
                 
                 BSR     get3to5            *get src addressing
-                MOVE.L  D7,D2
+                MOVE.L  D7,D1
                 
                 BSR     get0to2           *get src register
                 MOVE.L  D7,D3
