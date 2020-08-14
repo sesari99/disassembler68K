@@ -10,7 +10,19 @@
         ORG    $4000   
 ****************************************************        
 NOP
-    RTS
+                 ;OPCODEGROUP7.1.1 TEST  REG SHIFT
+                 ;LSL.B   #2,D3 
+                 LSL.L   D0,D5 
+                 
+                 ;OPCODEGROUP7.1.2 TEST   REG SHIFT
+                 ASL.B   #2,D3 
+                 
+                 ;OPCODEGROUP7.3.2 TEST     MEM SHIFT
+                 LSL   (A0)+ 
+                
+                 ;OPCODEGROUP7.3.1 TEST       MEM SHIFT           
+                 ASL   (A0)+     RTS
+                 
     NOP
     RTS
     LEA     (A0),A0
@@ -1590,42 +1602,87 @@ EAGROUP5_SIZEW
                     
                     RTS
 
-
 EAGROUP2
-                    CLR.L   D3
-                    MOVE.L  D2,D3
-                    ;push value to be shifted into string stack
-                    AND.L   #%0000000000000111,D3
-                    ADDI    #$30,D3
-                    MOVE.B  D3,(A4)+
-                    MOVE.B  #'D',(A4)+
-                    MOVE.B  #' ',(A4)+
-                    MOVE.B  #',',(A4)+
-                    
-                    CLR.L   D3
-                    MOVE.L  D2,D3
-                    AND.L   #%0000111000000000,D3
-                    ASR.L   #8,D3
-                    ASR.L   #1,D3
-                    ADDI    #$30,D3
-                    MOVE.B  D3,(A4)+
-                    
-                    CLR.L   D3
-                    MOVE.L  D2,D3
-                    ;lets detect i/r
-                    AND.L   #%0000000000100000,D3
-                    ASR.L   #5,D3
-                    CMPI.L  #0,D3
-                    BEQ     EAGROUP2IMMEDIATE
-                    
-                    MOVE.B  #'D',(A4)+
-                    MOVE.B  #' ',(A4)+
-                    RTS                 
-                    
-EAGROUP2IMMEDIATE
-                    MOVE.B  #'#',(A4)+
-                    MOVE.B  #' ',(A4)+
-                    RTS
+                MOVE.W     D2,D3
+                ASR.L      #5,D3 ;shifting bits to get to I/R bit
+                AND.L      #%00000000001,D3
+                CMPI.W     #1,D3
+                BNE        INTDATABRANCH
+                
+                MOVE.W     D2,D3
+                AND.L      #%0000000000000111,D3
+                ADDI.B     #$30,D3
+                MOVE.B     D3,(A4)+
+                MOVE.B     #'D',(A4)+
+                MOVE.B     #',',(A4)+
+
+                MOVE.W     D2,D3
+                 ASR.L     #8,D3
+                ASR.L      #1,D3
+                AND.L      #%0000111,D3
+                ADDI.B     #$30,D3
+                MOVE.B     D3,(A4)+
+                MOVE.B     #'D',(A4)+
+                MOVE.B     #' ',(A4)+
+                MOVE.B     #' ',(A4)+
+                MOVE.B     #' ',(A4)+
+                RTS
+
+                
+INTDATABRANCH   MOVE.W     D2,D3
+                AND.L      #%0000000000000111,D3
+                ADDI.B     #$30,D3
+                MOVE.B     D3,(A4)+
+                MOVE.B     #'D',(A4)+
+                MOVE.B     #',',(A4)+
+
+                MOVE.W     D2,D3
+                ASR.L     #8,D3
+                ASR.L      #1,D3
+                AND.L      #%0000111,D3
+                ADDI.B     #$30,D3
+                MOVE.B     D3,(A4)+
+                MOVE.B     #'#',(A4)+
+                MOVE.B     #' ',(A4)+
+                MOVE.B     #' ',(A4)+
+                MOVE.B     #' ',(A4)+
+
+                RTS
+*EAGROUP2
+*                    CLR.L   D3
+*                    MOVE.L  D2,D3
+*                    ;push value to be shifted into string stack
+*                    AND.L   #%0000000000000111,D3
+*                    ADDI    #$30,D3
+*                    MOVE.B  D3,(A4)+
+*                    MOVE.B  #'D',(A4)+
+*                    MOVE.B  #' ',(A4)+
+*                    MOVE.B  #',',(A4)+
+*                    
+*                    CLR.L   D3
+*                    MOVE.L  D2,D3
+*                    AND.L   #%0000111000000000,D3
+*                    ASR.L   #8,D3
+*                    ASR.L   #1,D3
+*                    ADDI    #$30,D3
+*                    MOVE.B  D3,(A4)+
+*                    
+*                    CLR.L   D3
+*                    MOVE.L  D2,D3
+*                    ;lets detect i/r
+*                    AND.L   #%0000000000100000,D3
+*                    ASR.L   #5,D3
+*                    CMPI.L  #0,D3
+*                    BEQ     EAGROUP2IMMEDIATE
+*                    
+*                    MOVE.B  #'D',(A4)+
+*                    MOVE.B  #' ',(A4)+
+*                    RTS                 
+*                    
+*EAGROUP2IMMEDIATE
+*                    MOVE.B  #'#',(A4)+
+*                    MOVE.B  #' ',(A4)+
+*                    RTS
                     
 EAGROUP8
                     MOVEM.L D2,-(SP)
