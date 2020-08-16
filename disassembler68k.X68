@@ -7,361 +7,6 @@
 * current I/O should be able to detext values exceeding the 32 bit unsigned range (FFFFFFFF) and recognize invalid input.
 * if you input a lower case letter, it will automatically convert into uppercase. 
 *-----------------------------------------------------------    
-        ORG    $4000   
-****************************************************     
-NOP
-    RTS
-    NOP
-    RTS
-    LEA     (A0),A0
-    LEA     (A5),A0
-    LEA     (A7),A0
-    LEA     (A0),A7
-    LEA     (A5),A7
-    LEA     (A7),A7
-    MOVE.B    D0,D1
-    MOVE.B    D0,(A0)
-    MOVE.B    D0,(A0)+
-    MOVE.B    D0,-(A0)
-    MOVE.B    (A0),D0
-    MOVE.B    (A0),(A1)
-    MOVE.B    (A0),(A1)+
-    MOVE.B    (A0),-(A1)
-    MOVE.B    (A0)+,D0
-    MOVE.B    (A0)+,(A1)
-    MOVE.B    (A0)+,(A1)+
-    MOVE.B    (A0)+,-(A1)
-    MOVE.B    -(A0),D0
-    MOVE.B    -(A0),(A1)
-    MOVE.B    -(A0),(A1)+
-    MOVE.B    -(A0),-(A1)
-    MOVE.W    D0,D1
-    MOVE.W    D0,(A0)
-    MOVE.W    D0,(A0)+
-    MOVE.W    D0,-(A0)
-    MOVE.W    A0,D0
-    MOVE.W    A0,(A1)
-    MOVE.W    A0,(A1)+
-    MOVE.W    A0,-(A1)
-    MOVE.W    (A0),D0
-    MOVE.W    (A0),(A1)
-    MOVE.W    (A0),(A1)+
-    MOVE.W    (A0),-(A1)
-    MOVE.W    (A0)+,D0
-    MOVE.W    (A0)+,(A1)
-    MOVE.W    (A0)+,(A1)+
-    MOVE.W    (A0)+,-(A1)
-    MOVE.W    -(A0),D0
-    MOVE.W    -(A0),(A1)
-    MOVE.W    -(A0),(A1)+
-    MOVE.W    -(A0),-(A1)
-    MOVE.L    D0,D1
-    MOVE.L    D0,(A0)
-    MOVE.L    D0,(A0)+
-    MOVE.L    D0,-(A0)
-    MOVE.L    A0,D0
-    MOVE.L    A0,(A1)
-    MOVE.L    A0,(A1)+
-    MOVE.L    A0,-(A1)
-    MOVE.L    (A0),D0
-    MOVE.L    (A0),(A1)
-    MOVE.L    (A0),(A1)+
-    MOVE.L    (A0),-(A1)
-    MOVE.L    (A0)+,D0
-    MOVE.L    (A0)+,(A1)
-    MOVE.L    (A0)+,(A1)+
-    MOVE.L    (A0)+,-(A1)
-    MOVE.L    -(A0),D0
-    MOVE.L    -(A0),(A1)
-    MOVE.L    -(A0),(A1)+
-    MOVE.L    -(A0),-(A1)
-    MOVEM.W   A1-A7,-(A1)
-    MOVEM.L   D1-D7,-(A1)
-    MOVEM.W   A1/D7,-(A1)
-    MOVEM.L   A1/D7,-(A1)
-    MOVEM.W   A1-A7,(A1)
-    MOVEM.L   D1-D7,(A1)
-    MOVEM.W   A1/D7,(A1)
-    MOVEM.L   A1/D7,(A1)
-    MOVEM.W   (A1)+,A1-A7
-    MOVEM.L   (A1)+,D1-D7
-    MOVEM.W   (A1)+,A1/D7
-    MOVEM.L   (A1)+,A1/D7
-    MOVEM.W   (A1),A1-A7
-    MOVEM.L   (A1),D1-D7
-    MOVEM.W   (A1),A1/D7
-    MOVEM.L   (A1),A1/D7
-    MOVEA.L    D0,A0
-    MOVEA.L    A0,A0
-    MOVEA.L    (A0),A0
-    MOVEA.L    (A0)+,A0
-    MOVEA.L    -(A0),A0  
-    ADD.B     D1,D2
-    ADD.B     D1,(A1)
-    ADD.B     D1,(A1)+
-    ADD.B     D1,-(A1)
-    ADD.B     (A1),D1
-    ADD.B     (A1)+,D1
-    ADD.B     -(A1),D1
-    ADD.W     D1,D2
-    ADD.W     D1,(A1)
-    ADD.W     D1,(A1)+
-    ADD.W     D1,-(A1)
-    ADD.W     (A1),D1
-    ADD.W     (A1)+,D1
-    ADD.W     -(A1),D1
-    ADD.L     D1,D2
-    ADD.L     D1,(A1)
-    ADD.L     D1,(A1)+
-    ADD.L     D1,-(A1)
-    ADD.L     (A1),D1
-    ADD.L     (A1)+,D1
-    ADD.L     -(A1),D1
-    ADDA.L        (A1)+,A2
-    ADDA.L        -(A1),A2
-    SUB.B     D1,D2
-    SUB.B     D1,(A1)
-    SUB.B     D1,(A1)+
-    SUB.B     D1,-(A1)
-    SUB.B     (A1),D1
-    SUB.B     (A1)+,D1
-    SUB.B     -(A1),D1
-    SUB.W     D1,D2
-    SUB.W     D1,A1
-    SUB.W     D1,(A1)
-    SUB.W     D1,(A1)+
-    SUB.W     D1,-(A1)
-    SUB.W     A1,D1
-    SUB.W     (A1),D1
-    SUB.W     (A1)+,D1
-    SUB.W     -(A1),D1
-    SUB.L     D1,D2
-    SUB.L     D1,A1
-    SUB.L     D1,(A1)
-    SUB.L     D1,(A1)+
-    SUB.L     D1,-(A1)
-    SUB.L     A1,D1
-    SUB.L     (A1),D1
-    SUB.L     (A1)+,D1
-    SUB.L     -(A1),D1    
-    MULS.W    D0,D1
-    MULS.W    (A0),D1
-    MULS.W    -(A0),D1
-    MULS.W    (A0)+,D1
-    DIVU.W    D0,D1
-    DIVU.W    (A0),D1
-    DIVU.W    -(A0),D1
-    DIVU.W    (A0)+,D1
-    AND.B     D1,D2
-    AND.B     D1,(A1)
-    AND.B     D1,(A1)+
-    AND.B     D1,-(A1)
-    AND.B     (A1),D1
-    AND.B     (A1)+,D1
-    AND.B     -(A1),D1
-    AND.W     D1,D2
-    AND.W     D1,(A1)
-    AND.W     D1,(A1)+
-    AND.W     D1,-(A1)
-    AND.W     (A1),D1
-    AND.W     (A1)+,D1
-    AND.W     -(A1),D1
-    AND.L     D1,D2
-    AND.L     D1,(A1)
-    AND.L     D1,(A1)+
-    AND.L     D1,-(A1)
-    AND.L     (A1),D1
-    AND.L     (A1)+,D1
-    AND.L     -(A1),D1  
-    BGT.B     label1
-    BGT.B     label2
-    BLE.B     label1
-    BLE.B     label2
-    BGE.B     label1
-    BEQ.B     label2
-    BEQ.W     label1
-    JSR       (A0)
-    JSR       $1234
-    JSR       $12345678
-    JSR       label1
-    JSR       label2
-    JSR       label3
-    NOP
-    RTS
-label1
-    NOP
-    RTS
-    LEA       $12,A0
-    LEA       $1234,A0
-    LEA       $12345678,A0
-label2
-    LSL.B     D1,D2
-    LSL.W     D1,D2
-    LSL.W     (A1)
-    LSL.W     (A1)+
-    LSL.W     -(A1)
-    LSL.L     D1,D2
-    ASL.B     D1,D2
-    ASL.W     D1,D2
-    ASL.W     (A1)
-    ASL.W     (A1)+
-    ASL.W     -(A1)
-    ASL.L     D1,D2
-label3
-    MOVEM.W   A1-A7,$12
-    MOVEM.L   D1-D7,$12
-    MOVEM.W   A1/D7,$12
-    MOVEM.L   A1/D7,$12
-    MOVEM.W   A1-A7,$1234
-    MOVEM.L   D1-D7,$1234
-    MOVEM.W   A1/D7,$1234
-    MOVEM.L   A1/D7,$1234
-    MOVEM.W   A1-A7,$12345678
-    MOVEM.L   D1-D7,$12345678
-    MOVEM.W   A1/D7,$12345678
-    MOVEM.L   A1/D7,$12345678
-    MOVEM.W   $12,A1-A7
-    MOVEM.L   $12,D1-D7
-    MOVEM.W   $12,A1/D7
-    MOVEM.L   $12,A1/D7
-    MOVEM.W   $1234,A1-A7
-    MOVEM.L   $1234,D1-D7
-    MOVEM.W   $1234,A1/D7
-    MOVEM.L   $1234,A1/D7
-    MOVEM.W   $12345678,A1-A7
-    MOVEM.L   $12345678,D1-D7
-    MOVEM.W   $12345678,A1/D7
-    MOVEM.L   $12345678,A1/D7
-    MULS.W    $12,D1
-    MULS.W    $1234,D1
-    MULS.W    $12345678,D1
-    MULS.W    #$1234,D1
-    DIVU.W    $12,D1
-    DIVU.W    $1234,D1
-    DIVU.W    $12345678,D1
-    DIVU.W    #$1234,D1
-label4
-    BGT.B     label4
-    BGT.B     label4
-    BGT.B     label4
-    BLE.W     label1
-    BLE.W     label2
-    BLE.W     label3
-    BEQ.W     label1
-    BEQ.W     label2
-    BEQ.W     label3
-    BRA       label2
-    BRA       label3
-    JSR       label1
-    JSR       label2
-    JSR       label3                 
-
-
-pro              
-                NOP
-                
-                 ;OPCODEGROUP8 TEST
-                 MOVE.B  D2,D3      
-                 ;MOVEA #$00000047,A0 ;should be data
-                 
-                 ;OPCODEGROUP1.1 TEST 
-                 MOVEM.W D0,-(A5)
-                 MOVEM.W D1,-(A5)
-                 MOVEM.W D2,-(A5) 
-                 MOVEM.W D7,-(A5)
-                 
-                 MOVEM.W A0,-(A5) 
-                 MOVEM.W A1,-(A5) 
-                 MOVEM.W A2,-(A5) 
-                 MOVEM.W A7,-(A5)
-                 MOVEM.W D0-D7/A0-A7,-(A5)    
-                 MOVEM.W D1-D4/A2-A5,-(A5) 
-
-                 MOVEM.W (A5)+,D0
-                 MOVEM.W (A5)+,D1
-                 MOVEM.W (A5)+,D2
-                 MOVEM.W (A5)+,D7
-                 MOVEM.W (A5)+,A0
-                 MOVEM.W (A5)+,A1 
-                 MOVEM.W (A5)+,A2
-                 MOVEM.W (A5)+,A7  
-                 MOVEM.W (A5)+,D0-D7/A0-A7 ;D7 not printing
-                 MOVEM.W (A5)+,D1-D4/A2-A5
-
-                 
-                 ;JMP    pa      ;should be data (not wokring)
-                 
-                 ;OPCODEGROUP6 TEST
-                 ADD.B   D2,D3 
-                 ADD.B   D0,$00001012
-                 ;ADDX   -(A2),-(A3)    ;should be data (not working)
-                 ;ADDA   D3,A3          ;should be data
-                 
-                 ;OPCODEGROUP4 TEST
-                 SUB.B    D2,D3 
-                 SUB.B   D0,$00001012
-                 ;SUBX   -(A2),-(A3)    ;should be data (not working)
-                 ;SUBA   D3,A3          ;should be data
-                 
-                 ;OPCODEGROUP5 TEST
-                 MULS  D2,D3 
-                 ;MULU  D2,D3           ;should be data (not working)
-                 
-                 ;OPCODEGROUP3 TEST
-                 DIVU  D2,D3 
-                 ;DIVS  D2,D3           ;should be data
-                 
-                 ;OPCODEGROUP1.5 TEST
-                 LEA   $2000,A2  
-                 
-                 ;OPCODEGROUP5 TEST
-                 AND.B   #3,D3 
-                 AND.B   D0,$00001012           
-                 ;EXG   D2,D3           ;should be data (not working)
-                 
-                 ;OPCODEGROUP1.3 TEST
-                 NOT.B   D3
-                 NOT.W   (A3)+
-                 NOT.L   -(A3)
-                 NOT.W   $1234
-                 NOT.L   $12345678
-                 ;MOVE  D3,SR           ;should be data (not working)
-
-                 
-                 ;OPCODEGROUP7.1.1 TEST  REG SHIFT
-                 ;LSL.B   #2,D3 
-                 LSL.L   D0,D5 
-                 
-                 ;OPCODEGROUP7.1.2 TEST   REG SHIFT
-                 ASL.B   #2,D3 
-                 
-                 ;OPCODEGROUP7.3.2 TEST     MEM SHIFT
-                 LSL   (A0)+ 
-                
-                 ;OPCODEGROUP7.3.1 TEST       MEM SHIFT           
-                 ASL   (A0)+ 
-                 
-                ;OPCODEGROUP2.3 TEST
-                 BGT   pa
-                
-pa              ;OPCODEGROUP2.4 TEST
-                 BLE   pi
-                
-pi              ;OPCODEGROUP2.2 TEST
-                 BEQ   pu
-                
-pu              ;OPCODEGROUP2.1 TEST
-                 BRA.W    po 
-     
-po
-                 RTS
-
-pe               ;OPCODEGROUP1.4 TEST
-                JSR   (A1)
-
-                
-                
-****************************************************   
         ORG    $1000   
 START:                  ; first instruction of program   
 
@@ -664,6 +309,78 @@ OUTPUTADDRESS
                 CLR.W       D4   
                 RTS
 
+
+
+HEXOUTPUTIM      ;used D1(value being outpueed), D3 (D1 temp), D6 (char counter), A1(string buffer), A2 (string buffer), D4(0 size).
+                CLR.L   D2
+                CLR.L   D3
+                CLR.L   D5
+                CLR.L   D6
+                CLR.L   D7
+                CLR.L   D6                ; use D6 to count the total number of digits after conversion
+
+                
+                    
+* your code should start here
+
+CHEAPLOOPIM       CMP.L      #16,D1
+                BLT        DIRECTCONVIM
+                DIVS.W     #16,D1           ;find remainder 17
+                MOVE.L     D1,D3            ;set up to isolate remainder
+                ASR.L      #8,D3            ;remainder isolated 
+                ASR.L      #8,D3            ;NOW
+                LSL.L      #8,D1
+                LSL.L      #8,D1
+                LSR.L      #8,D1
+                LSR.L      #8,D1            ;Clunkyway to clear left hand side
+                BRA        CONVERTITIM                
+                   
+DIRECTCONVIM      CMP        #0,D1            ;IF it is zero
+                BEQ        DONEIM            ;we are done
+                MOVE.B     D1,D3
+                CLR        D1
+                BRA        CONVERTITIM
+  
+CONVERTITIM       CMP        #9,D3            ;If over 9
+                BGT        SPECCASEIM         ;go to adding 55
+                ADD.B      #48,D3           ;otherwise add 48 for ascii 0-9
+                ADD.B      #1,D6            ;increment #of characters
+                MOVE.B     D3,(A4)+         ;add ascii value
+                BRA        CHEAPLOOPIM             
+
+SPECCASEIM        ADD.B      #55,D3           ;for ascii A-G
+                ADD.B      #1,D6           ;increment #of characters
+                MOVE.B     D3,(A4)+        ;add ascii value
+                BRA        CHEAPLOOPIM
+DONEIM  
+                MOVE.B     D6,D5
+*                MOVE.W     #$8,D6
+                SUB.W      D4,D5
+                CMPI.W     #0,D5
+                BEQ        SKIPZEROLOOPIM
+                MULS.W     #-1,D5
+                AND.W      #$000F,D5
+                
+*ZeroLoop           
+*                MOVE.B     #$0,(A5)+
+*                SUBI.W     #1,D5
+*                CMPI.B     #0,D5              
+*                BNE        ZeroLoop
+TOREVERSEITIM  
+                CMPI.W      #0,D4           ;if its zero or less skip (D4 <= 0)
+                BLE         SKIPZEROLOOPIM
+                CMPI.B      #0,D5 
+                BEQ         SKIPZEROLOOPIM
+*                
+*ZEROLOOPIM        CLR.L       D1
+*                MOVE.B     #$30,(A4)+
+*                SUBI.W     #1,D5
+*                CMPI.B     #0,D5 
+*                BNE        ZEROLOOPIM
+                   
+                
+SKIPZEROLOOPIM
+                RTS      
                 
 HEXOUTPUT      ;used D1(value being outpueed), D3 (D1 temp), D6 (char counter), A1(string buffer), A2 (string buffer), D4(0 size).
                 CLR.L   D2
@@ -815,12 +532,12 @@ MOVEMBRENCHVALID
                 BNE     checkEAGROUP7PRE
                 
 MOVEMBRANCHCONT
+                JSR     getSizeFormat2
                 MOVEM.L D0-D7/A0-A3,-(SP)
                 JSR     EAGROUP7
                 MOVEM.L (SP)+, D0-D7/A0-A3
                 MOVE.B  #' ',(A4)+
-                JSR     getSizeFormat2
-                MOVE.B  D3,(A4)+
+                MOVE.B  (SIZEVAR),(A4)+
                 MOVE.B  #'.',(A4)+
                 MOVE.B  #'M',(A4)+
                 MOVE.B  #'E',(A4)+
@@ -839,6 +556,9 @@ NOTBRANCH       ;check 7 and 8 and make sure they are  not 11 from 7 and 8
                 CMPI.W  #%01000110,D3
                 BNE     INVALIDBRANCH
                 CLR.L   D3 ;this is now going to hold size branch value
+                JSR     getSizeFormat1
+                CMP.B   #$FF,(tempresult)
+                BEQ     NEXTIO
                 ;should also check size bits
 *                LEA     NOTMSG,A1
 *                MOVE.B  #14,D0
@@ -855,12 +575,9 @@ NOTBRANCH       ;check 7 and 8 and make sure they are  not 11 from 7 and 8
                 MOVEM.L (SP)+,D2
                 MOVE.B  #' ',(A4)+
                 ;check if A4 is empty
-                ;if so, then an invalid mustve occured. thus go directly to NEXTIO
-                JSR     getSizeFormat1
-                CMP.B   #$FF,(tempresult)
-                BEQ     NEXTIO 
+                ;if so, then an invalid mustve occured. thus go directly to NEXTIO 
                 ;compare size value here if needed
-                MOVE.B  D3,(A4)+
+                MOVE.B  (SIZEVAR),(A4)+
                 MOVE.B  #'.',(A4)+
                 MOVE.B  #'T',(A4)+
                 MOVE.B  #'O',(A4)+
@@ -927,7 +644,7 @@ PRINTLONGSIZE
 *                MOVE.B  #14,D0
 *                TRAP    #15
                 CLR.L    D3
-                MOVE.B   #'L',D3
+                MOVE.B   #'L',(SIZEVAR)
                 ;MOVE.B  #'L',(A4)+
                 RTS  
 
@@ -936,7 +653,7 @@ PRINTWORDSIZE
 *                MOVE.B  #14,D0
 *                TRAP    #15
                 CLR.L    D3
-                MOVE.B   #'W',D3
+                MOVE.B   #'W',(SIZEVAR)
                 ;MOVE.B  #'W',(A4)+
                 RTS
                 
@@ -945,7 +662,7 @@ PRINTBYTESIZE
 *                MOVE.B  #14,D0
 *                TRAP    #15
                 CLR.L    D3
-                MOVE.B   #'B',D3
+                MOVE.B   #'B',(SIZEVAR)
                 ;MOVE.B  #'W',(A4)+
                 RTS
                 
@@ -962,7 +679,7 @@ JSRMBRANCH      ;check 7 and 8 and make sure they are  not 11 from 7 and 8
                 MOVEM.L (SP)+,D0-D3
                 CMP.B   #$FF,(tempresult)
                 BEQ     NEXTIO
-                
+                MOVE.B  #'L',(SIZEVAR)
                 JSR     EAGROUP9
                 MOVE.B  #' ',(A4)+
                 MOVE.B  #'R',(A4)+
@@ -986,7 +703,7 @@ LEABRANCH      ;check 7 and make sure its set to 1
                 MOVEM.L (SP)+,D0-D3
                 CMP.B   #$FF,(tempresult)
                 BEQ     NEXTIO
-                
+                MOVE.B  #'L',(SIZEVAR)
                 JSR     EAGROUP4LEA
                 MOVE.B  #' ',(A4)+
                 MOVE.B  #'L',(A4)+
@@ -1023,7 +740,6 @@ BRABRANCH      ;check 9 and make sure its set to 0
                 MOVEM.L A2,-(SP)
                 JSR     EAGROUP5  
                 MOVEM.L (SP)+,A2 
-                MOVE.B  #' ',(A4)+            
                 MOVE.B  #'A',(A4)+
                 MOVE.B  #'R',(A4)+
                 MOVE.B  #'B',(A4)+
@@ -1039,7 +755,6 @@ BEQBRANCH
                 MOVEM.L A2,-(SP)
                 JSR     EAGROUP5  
                 MOVEM.L (SP)+,A2 
-                MOVE.B  #' ',(A4)+  
                 MOVE.B  #'Q',(A4)+
                 MOVE.B  #'E',(A4)+
                 MOVE.B  #'B',(A4)+
@@ -1055,7 +770,6 @@ BGTBRANCH
                 MOVEM.L A2,-(SP)
                 JSR     EAGROUP5  
                 MOVEM.L (SP)+,A2
-                MOVE.B  #' ',(A4)+   
                 MOVE.B  #'T',(A4)+
                 MOVE.B  #'G',(A4)+
                 MOVE.B  #'B',(A4)+
@@ -1070,7 +784,6 @@ BLEBRANCH
                 MOVEM.L A2,-(SP)
                 JSR     EAGROUP5  
                 MOVEM.L (SP)+,A2
-                MOVE.B  #' ',(A4)+   
                 MOVE.B  #'E',(A4)+
                 MOVE.B  #'L',(A4)+
                 MOVE.B  #'B',(A4)+
@@ -1092,7 +805,7 @@ OPCODEGROUP3
                 MOVEM.L (SP)+,D0-D3
                 CMP.B   #$FF,(tempresult)
                 BEQ     NEXTIO
-                
+                MOVE.B  #'W',(SIZEVAR)
                 JSR     EAGROUP4ALL
                 MOVE.B  #' ',(A4)+
                 MOVE.B  #'W',(A4)+
@@ -1154,17 +867,17 @@ GROUP1_2
                 BRA     CONTSUBBRANCH
 SUBBRANCH       
                 ;opmode check
+                CLR.L   D3
+                JSR     getSizeFormat1
+                CMP.B   #$FF,(tempresult)
+                BEQ     NEXTIO
                 BTST    #8,D2   ;z == 0 if bit is 1
                 BNE     GROUP1_2  ;z == 0 if bit is 1. not normal
                 BEQ     GROUP1_1
 
 CONTSUBBRANCH        
-                MOVE.B  #' ',(A4)+        
-                CLR.L   D3
-                JSR     getSizeFormat1
-                CMP.B   #$FF,(tempresult)
-                BEQ     NEXTIO 
-                MOVE.B  D3,(A4)+
+                MOVE.B  #' ',(A4)+         
+                MOVE.B  (SIZEVAR),(A4)+
                 MOVE.B  #'.',(A4)+
                 MOVE.B  #'B',(A4)+
                 MOVE.B  #'U',(A4)+
@@ -1204,6 +917,7 @@ MULSBRANCH      MOVEM.L D0-D3,-(SP)
                 MOVEM.L (SP)+,D0-D3
                 CMP.B   #$FF,(tempresult)
                 BEQ     NEXTIO
+                MOVE.B  #'W',(SIZEVAR)
                 JSR     EAGROUP4ALL
                 MOVE.B  #' ',(A4)+
                 MOVE.B  #'W',(A4)+
@@ -1252,16 +966,16 @@ ANDBRANCH
                 BEQ     INVALIDBRANCH
                 
                 ;opmode check
+                JSR     getSizeFormat1
+                CMP.B   #$FF,(tempresult)
+                BEQ     NEXTIO 
                 BTST    #8,D2   ;z == 0 if bit is 1
                 BNE     GROUP1_2AND ;z == 0 if bit is 1. not normal
                 BEQ     GROUP1_1AND
                 
 CONTANDBRANCH                
                 MOVE.B  #' ',(A4)+
-                JSR     getSizeFormat1
-                CMP.B   #$FF,(tempresult)
-                BEQ     NEXTIO 
-                MOVE.B  D3,(A4)+
+                MOVE.B  (SIZEVAR),(A4)+
                 MOVE.B  #'.',(A4)+
                 MOVE.B  #'D',(A4)+
                 MOVE.B  #'N',(A4)+
@@ -1312,6 +1026,9 @@ GROUP1_2ADD
                 BRA     CONTADDBRANCH
                
 PRINTADD
+                JSR     getSizeFormat1
+                CMP.B   #$FF,(tempresult)
+                BEQ     NEXTIO  
                 BTST    #8,D2   ;z == 0 if bit is 1
                 BNE     GROUP1_2ADD  ;z == 0 if bit is 1. not normal
                 BEQ     GROUP1_1ADD
@@ -1320,10 +1037,7 @@ CONTADDBRANCH
                 CLR.L   D2
                 MOVE.L  D3,D2
                 MOVE.B  #' ',(A4)+
-                JSR     getSizeFormat1
-                CMP.B   #$FF,(tempresult)
-                BEQ     NEXTIO  
-                MOVE.B  D3,(A4)+           
+                MOVE.B  (SIZEVAR),(A4)+           
                 MOVE.B  #'.',(A4)+
                 MOVE.B  #'D',(A4)+
                 MOVE.B  #'D',(A4)+
@@ -1377,7 +1091,7 @@ ASLMEMBRANCHCHECKPOINT
                 MOVEM.L (SP)+,D0-D3
                 CMP.B   #$FF,(tempresult)
                 BEQ     NEXTIO
-                
+                MOVE.B  #'W',(SIZEVAR)
                 JSR     EAGROUP9
                 MOVE.B  #' ',(A4)+
                 MOVE.B  #'L',(A4)+
@@ -1394,6 +1108,7 @@ LSLMEMBRANCH
                 MOVEM.L (SP)+,D0-D3
                 CMP.B   #$FF,(tempresult)
                 BEQ     NEXTIO
+                MOVE.B  #'W',(SIZEVAR)
                 JSR     EAGROUP9
                 MOVE.B  #' ',(A4)+
                 MOVE.B  #'L',(A4)+
@@ -1409,15 +1124,15 @@ ASLREGBRANCH    ;have to check size
                 AND.W   #$0000000011,D3
                 CMPI.W  #3,D3
                 BEQ     INVALIDBRANCH
+                JSR     getSizeFormat1
+                CMP.B   #$FF,(tempresult)
+                BEQ     NEXTIO
                 
                 MOVEM.L D2/D3,-(SP)
                 JSR     EAGROUP2
                 MOVEM.L (SP)+,D2/D3
-                MOVE.B  #' ',(A4)+
-                JSR     getSizeFormat1
-                CMP.B   #$FF,(tempresult)
-                BEQ     NEXTIO 
-                MOVE.B  D3,(A4)+
+                MOVE.B  #' ',(A4)+ 
+                MOVE.B  (SIZEVAR),(A4)+
                 MOVE.B  #'.',(A4)+
                 MOVE.B  #'L',(A4)+
                 MOVE.B  #'S',(A4)+
@@ -1432,17 +1147,19 @@ LSLREGBRANCH    ;have to check size
                 AND.W   #$0000000011,D3
                 CMPI.W  #3,D3
                 BEQ     INVALIDBRANCH
-                
+                JSR     getSizeFormat1
+                CMP.B   #$FF,(tempresult)
+                BEQ     NEXTIO
                 ;get our EA here first
-                MOVEM.L D2/D3,-(SP)
-                JSR     EAGROUP2
-                MOVEM.L (SP)+,D2/D3
-                MOVE.B  #' ',(A4)+
                 JSR     getSizeFormat1
                 CMP.B   #$FF,(tempresult)
                 BEQ     NEXTIO 
                 
-                MOVE.B  D3,(A4)+
+                MOVEM.L D2/D3,-(SP)
+                JSR     EAGROUP2
+                MOVEM.L (SP)+,D2/D3
+                MOVE.B  #' ',(A4)+ 
+                MOVE.B  (SIZEVAR),(A4)+
                 MOVE.B  #'.',(A4)+
                 MOVE.B  #'L',(A4)+
                 MOVE.B  #'S',(A4)+
@@ -1467,6 +1184,10 @@ OPCODEGROUP8    ;check dest mode does not equal to 001
                 CMP.B   #$FF,(tempresult)
                 BEQ     NEXTIO
                 
+                JSR     getSizeFormat3
+                CMP.B   #$FF,(tempresult)
+                BEQ     NEXTIO 
+                
                 MOVEM.L D2/D3,-(SP)
                 JSR     EAGROUP8
                 MOVEM.L (SP)+,D2/D3
@@ -1474,11 +1195,7 @@ OPCODEGROUP8    ;check dest mode does not equal to 001
                 CMP.B   #$FF,(tempresult)
                 BEQ     NEXTIO
                 MOVE.B  #' ',(A4)+
-                JSR     getSizeFormat3
-                CMP.B   #$FF,(tempresult)
-                BEQ     NEXTIO 
-                
-                MOVE.B  D3,(A4)+
+                MOVE.B  (SIZEVAR),(A4)+
                 MOVE.B  #'.',(A4)+
                 MOVE.B  #'E',(A4)+
                 MOVE.B  #'V',(A4)+
@@ -2078,18 +1795,63 @@ PRINTLONGDATA7
                     MOVE.B  #'$',(A4)+
                     RTS
   
-PRINTIMMEDIATEDATA7
+PRINTIMMEDIATEDATA7 MOVEM.W D1,-(SP)
+                    CLR.L   D1
+                    MOVE.B  (SIZEVAR),D1
+                    CMPI.W #'B',(SIZEVAR)
+                    BEQ PRINTIMMEDIATEDATABYTE7
+                    CMPI.W  #'L',(SIZEVAR)
+                    BEQ PRINTIMMEDIATEDATALONG7
                     MOVE.W  (A2)+,D1
                     CLR.L   D1
                     MOVE.W  (A2)+,D1
                     MOVEM.L D2-D7/A1-A3/A6,-(sp)
                     MOVE.L  #4,D4
-                    JSR     HEXOUTPUT
+                    JSR     HEXOUTPUTIM
                     MOVEM.L  (sp)+,D2-D7/A1-A3/A6
                     MOVE.B  #'$',(A4)+
                     MOVE.B  #'#',(A4)+
-                    RTS                      
+                    RTS
+                      
+PRINTIMMEDIATEDATABYTE7
+                    MOVEM.W (SP)+,D1                    
+                    MOVE.W  (A2)+,D1
+                    CLR.L   D1
+                    MOVE.W  (A2)+,D1
+                    MOVEM.L D2-D7/A1-A3/A6,-(sp)
+                    MOVE.L  #2,D4
+                    JSR     HEXOUTPUTIM
+                    MOVEM.L  (sp)+,D2-D7/A1-A3/A6
+                    MOVE.B  #'$',(A4)+
+                    MOVE.B  #'#',(A4)+
+                    RTS
+
+PRINTIMMEDIATEDATALONG7 
+                    MOVEM.W (SP)+,D1                    
+                    MOVE.W  (A2)+,D1
+                    CLR.L   D1
+                    MOVE.W  (A2)+,D1
+                    CLR.L   D6
+                    MOVE.W  D1,D6
+                    MOVE.W  (A2)+,D1
                     
+                    MOVEM.L D2-D7/A1-A3/A6,-(sp)
+                    MOVE.L   #$4,D4
+                    JSR      HEXOUTPUTIM
+                    MOVEM.L  (sp)+,D2-D7/A1-A3/A6
+                    
+                    
+                    MOVE.W  D6,D1
+                    CLR.L   D6
+                    
+                    MOVEM.L D2-D7/A1-A3/A6,-(sp)
+                    MOVE.L   #$4,D4
+                    JSR      HEXOUTPUT
+                    MOVEM.L  (sp)+,D2-D7/A1-A3/A6
+                    MOVE.B  #'$',(A4)+
+                    MOVE.B  #'#',(A4)+
+                    RTS
+                  
 EAGROUP7POST                             
                    JSR     EAGROUP7OTHER
                    MOVE.W  (A2),D1
@@ -2649,14 +2411,61 @@ PRINTLONGDATA
                     RTS
   
 PRINTIMMEDIATEDATA
-                    MOVE.W  (A2)+,D1
+                    MOVEM.W D1,-(SP)
+                    CLR.L   D1
+                    MOVE.B  (SIZEVAR),D1
+                    CMPI.W  #'B',D1
+                    BEQ PRINTIMMEDIATEDATABYTE
+                    CMPI.W  #'L',D1
+                    BEQ PRINTIMMEDIATEDATALONG
+                    MOVEM.W (SP)+,D1
                     MOVEM.L D2-D7/A1-A3/A6,-(sp)
                     MOVE.L  #4,D4
-                    JSR     HEXOUTPUT
+                    CLR.L   D1
+                    MOVE.W  (A2)+,D1
+                    JSR     HEXOUTPUTIM
                     MOVEM.L  (sp)+,D2-D7/A1-A3/A6
                     MOVE.B  #'$',(A4)+
                     MOVE.B  #'#',(A4)+
-                    RTS                  
+                    RTS           
+
+PRINTIMMEDIATEDATABYTE
+                    MOVEM.W (SP)+,D1                    
+                    CLR.L   D1
+                    MOVE.W  (A2)+,D1
+                    MOVEM.L D2-D7/A1-A3/A6,-(sp)
+                    MOVE.L  #2,D4
+                    JSR     HEXOUTPUTIM
+                    MOVEM.L  (sp)+,D2-D7/A1-A3/A6
+                    MOVE.B  #'$',(A4)+
+                    MOVE.B  #'#',(A4)+
+                    RTS
+
+PRINTIMMEDIATEDATALONG
+                    CLR.L   D1
+                    MOVEM.W (SP)+,D1
+                    MOVE.W  (A2)+,D1
+                    CLR.L   D6
+                    MOVE.W  D1,D6
+                    MOVE.W  (A2)+,D1
+ 
+               
+                    MOVEM.L D2-D7/A1-A3/A6,-(sp)
+                    MOVE.L   #$4,D4
+                    JSR      HEXOUTPUTIM
+                    MOVEM.L  (sp)+,D2-D7/A1-A3/A6
+                    
+                    
+                    MOVE.W  D6,D1
+                    CLR.L   D6
+                    
+                    MOVEM.L D2-D7/A1-A3/A6,-(sp)
+                    MOVE.L   #$4,D4
+                    JSR      HEXOUTPUTIM
+                    MOVEM.L  (sp)+,D2-D7/A1-A3/A6
+                    MOVE.B  #'$',(A4)+
+                    MOVE.B  #'#',(A4)+
+                    RTS
                         
 ADDRESSINCREMENT    
                     MOVE.B  #'+',(A4)+
@@ -2958,6 +2767,7 @@ LONGSIZE            DC.B    'L  ',0
 tempresult          DS.L    50      ; variable to save temporary result
 base16value         DS.L    50     ; variable to save the final result
 IOVariable          DS.L    10     ; variable to save the final result
+SIZEVAR             DS.L    10     ; variable to save the final result
 
 * Put variables and constants here
 
