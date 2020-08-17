@@ -6,7 +6,7 @@
 * afterwards, it will include ML of whatever we wrote after NOP.
 * current I/O should be able to detext values exceeding the 32 bit unsigned range (FFFFFFFF) and recognize invalid input.
 * if you input a lower case letter, it will automatically convert into uppercase. 
-*-----------------------------------------------------------    
+*-----------------------------------------------------------   
         ORG    $1000   
 START:                  ; first instruction of program   
 
@@ -307,80 +307,7 @@ OUTPUTADDRESS
 
                 MOVE.L      D4,D1
                 CLR.W       D4   
-                RTS
-
-
-
-HEXOUTPUTIM      ;used D1(value being outpueed), D3 (D1 temp), D6 (char counter), A1(string buffer), A2 (string buffer), D4(0 size).
-                CLR.L   D2
-                CLR.L   D3
-                CLR.L   D5
-                CLR.L   D6
-                CLR.L   D7
-                CLR.L   D6                ; use D6 to count the total number of digits after conversion
-
-                
-                    
-* your code should start here
-
-CHEAPLOOPIM       CMP.L      #16,D1
-                BLT        DIRECTCONVIM
-                DIVS.W     #16,D1           ;find remainder 17
-                MOVE.L     D1,D3            ;set up to isolate remainder
-                ASR.L      #8,D3            ;remainder isolated 
-                ASR.L      #8,D3            ;NOW
-                LSL.L      #8,D1
-                LSL.L      #8,D1
-                LSR.L      #8,D1
-                LSR.L      #8,D1            ;Clunkyway to clear left hand side
-                BRA        CONVERTITIM                
-                   
-DIRECTCONVIM      CMP        #0,D1            ;IF it is zero
-                BEQ        DONEIM            ;we are done
-                MOVE.B     D1,D3
-                CLR        D1
-                BRA        CONVERTITIM
-  
-CONVERTITIM       CMP        #9,D3            ;If over 9
-                BGT        SPECCASEIM         ;go to adding 55
-                ADD.B      #48,D3           ;otherwise add 48 for ascii 0-9
-                ADD.B      #1,D6            ;increment #of characters
-                MOVE.B     D3,(A4)+         ;add ascii value
-                BRA        CHEAPLOOPIM             
-
-SPECCASEIM        ADD.B      #55,D3           ;for ascii A-G
-                ADD.B      #1,D6           ;increment #of characters
-                MOVE.B     D3,(A4)+        ;add ascii value
-                BRA        CHEAPLOOPIM
-DONEIM  
-                MOVE.B     D6,D5
-*                MOVE.W     #$8,D6
-                SUB.W      D4,D5
-                CMPI.W     #0,D5
-                BEQ        SKIPZEROLOOPIM
-                MULS.W     #-1,D5
-                AND.W      #$000F,D5
-                
-*ZeroLoop           
-*                MOVE.B     #$0,(A5)+
-*                SUBI.W     #1,D5
-*                CMPI.B     #0,D5              
-*                BNE        ZeroLoop
-TOREVERSEITIM  
-                CMPI.W      #0,D4           ;if its zero or less skip (D4 <= 0)
-                BLE         SKIPZEROLOOPIM
-                CMPI.B      #0,D5 
-                BEQ         SKIPZEROLOOPIM
-*                
-*ZEROLOOPIM        CLR.L       D1
-*                MOVE.B     #$30,(A4)+
-*                SUBI.W     #1,D5
-*                CMPI.B     #0,D5 
-*                BNE        ZEROLOOPIM
-                   
-                
-SKIPZEROLOOPIM
-                RTS      
+                RTS    
                 
 HEXOUTPUT      ;used D1(value being outpueed), D3 (D1 temp), D6 (char counter), A1(string buffer), A2 (string buffer), D4(0 size).
                 CLR.L   D2
@@ -1807,7 +1734,7 @@ PRINTIMMEDIATEDATA7 MOVEM.W D1,-(SP)
                     MOVE.W  (A2)+,D1
                     MOVEM.L D2-D7/A1-A3/A6,-(sp)
                     MOVE.L  #4,D4
-                    JSR     HEXOUTPUTIM
+                    JSR     HEXOUTPUT
                     MOVEM.L  (sp)+,D2-D7/A1-A3/A6
                     MOVE.B  #'$',(A4)+
                     MOVE.B  #'#',(A4)+
@@ -1820,7 +1747,7 @@ PRINTIMMEDIATEDATABYTE7
                     MOVE.W  (A2)+,D1
                     MOVEM.L D2-D7/A1-A3/A6,-(sp)
                     MOVE.L  #2,D4
-                    JSR     HEXOUTPUTIM
+                    JSR     HEXOUTPUT
                     MOVEM.L  (sp)+,D2-D7/A1-A3/A6
                     MOVE.B  #'$',(A4)+
                     MOVE.B  #'#',(A4)+
@@ -1837,7 +1764,7 @@ PRINTIMMEDIATEDATALONG7
                     
                     MOVEM.L D2-D7/A1-A3/A6,-(sp)
                     MOVE.L   #$4,D4
-                    JSR      HEXOUTPUTIM
+                    JSR      HEXOUTPUT
                     MOVEM.L  (sp)+,D2-D7/A1-A3/A6
                     
                     
@@ -2423,7 +2350,7 @@ PRINTIMMEDIATEDATA
                     MOVE.L  #4,D4
                     CLR.L   D1
                     MOVE.W  (A2)+,D1
-                    JSR     HEXOUTPUTIM
+                    JSR     HEXOUTPUT
                     MOVEM.L  (sp)+,D2-D7/A1-A3/A6
                     MOVE.B  #'$',(A4)+
                     MOVE.B  #'#',(A4)+
@@ -2435,7 +2362,7 @@ PRINTIMMEDIATEDATABYTE
                     MOVE.W  (A2)+,D1
                     MOVEM.L D2-D7/A1-A3/A6,-(sp)
                     MOVE.L  #2,D4
-                    JSR     HEXOUTPUTIM
+                    JSR     HEXOUTPUT
                     MOVEM.L  (sp)+,D2-D7/A1-A3/A6
                     MOVE.B  #'$',(A4)+
                     MOVE.B  #'#',(A4)+
@@ -2452,7 +2379,7 @@ PRINTIMMEDIATEDATALONG
                
                     MOVEM.L D2-D7/A1-A3/A6,-(sp)
                     MOVE.L   #$4,D4
-                    JSR      HEXOUTPUTIM
+                    JSR      HEXOUTPUT
                     MOVEM.L  (sp)+,D2-D7/A1-A3/A6
                     
                     
@@ -2461,7 +2388,7 @@ PRINTIMMEDIATEDATALONG
                     
                     MOVEM.L D2-D7/A1-A3/A6,-(sp)
                     MOVE.L   #$4,D4
-                    JSR      HEXOUTPUTIM
+                    JSR      HEXOUTPUT
                     MOVEM.L  (sp)+,D2-D7/A1-A3/A6
                     MOVE.B  #'$',(A4)+
                     MOVE.B  #'#',(A4)+
