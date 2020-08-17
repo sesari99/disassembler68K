@@ -2663,30 +2663,8 @@ NEWPROGMSG          DC.L    'STARTOVER? [Y|N]: ',CR,LF,0
 
 ENDMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    END    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',0
 
-PLUSMSG             DC.B    '+',0
-NEGMSG              DC.B    '-',0
 CLR                 DC.B    CR,LF,0
-NOOPMSG             DC.B    ' NOP',0
-RTSMSG              DC.B    ' RTS',0
-
-MOVEMMSG            DC.B    ' MOVEM.',0
-MOVEMSG             DC.B    ' MOVE.',0
-LEAMSG              DC.B    ' LEA.',0
-NOTMSG              DC.B    ' NOT.',0
-JSRMSG              DC.B    ' JSR.',0
-BGTMSG              DC.B    ' BGT.',0
-BLEMSG              DC.B    ' BLE.',0
-BEQMSG              DC.B    ' BEQ.',0
-BRAMSG              DC.B    ' BRA.',0
-DIVUMSG             DC.B    ' DIVU.',0
-SUBMSG              DC.B    ' SUB.',0
-MULSMSG             DC.B    ' MULS.',0
-ANDMSG              DC.B    ' AND.',0
-ADDMSG              DC.B    ' ADD.',0
-LSLMSG              DC.B    ' LSL.',0
-ASLMSG              DC.B    ' ASL.',0
-INVALIDMSG          DC.B    ' DATA  ',0
-EVENINPUTMSG        DC.B    ' INPUT VALUE IS EVEN!',0
+EVENINPUTMSG        DC.B    ' INPUT VALUE MUST BE EVEN!',0
 SPACEMSG            DC.B    '   ',0
 WORDSIZE            DC.B    'W  ',0
 BYTESIZE            DC.B    'B  ',0
