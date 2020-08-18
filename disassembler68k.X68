@@ -44,10 +44,6 @@ FOR_LOOP        CMP.B   D1,D3
                 BEQ     CHECKNEG
                 CLR.W   D6               
                 ADD.B  (A1)+,D6
-                CMP.B   #$51,D6
-                BEQ     ENDPROGRAM
-                CMP.B   #$71,D6
-                BEQ     ENDPROGRAM
                 CMP.B   #$30,D6
                 BLT     BADINPUT
                 CMP.B   #$39,D6
@@ -2576,16 +2572,8 @@ NEWPAGELOOP
                 MOVE.B  (A1),D3
                 
                 LEA     IOVariable,A1          ;had to specify or it wont work properly
-                CMP.B   #$59,D3
-                BEQ     FEEDOPCODE
-                CMP.B   #$79,D3
-                BEQ     FEEDOPCODE
                 CMP.B   #$0,D3
                 BEQ     FEEDOPCODE
-                CMP.B   #$4E,D3
-                BEQ     ENDPAGE 
-                CMP.B   #$6E,D3
-                BEQ     ENDPAGE 
                 
                 LEA     IOVariable,A1          ;had to specify or it wont work properly
                 LEA     BADCHARACTER,A1     
@@ -2651,8 +2639,8 @@ WELMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                     DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',CR,LF,CR,LF, 0
 LINE_COUNT          DS.B    1
 
-MSGINPUT            DC.B    'Please enter first memory address between $3000 to $FFFFFFFF (''Q'' to quit): $',0
-MSGINPUT2           DC.B    'Please enter second memory address between $3000 to $FFFFFFFF (''Q'' to quit): $',0
+MSGINPUT            DC.B    'Enter first memory address between $3000 to $FFFFFFFF in hex: $',0
+MSGINPUT2           DC.B    'Enter second memory address between $3000 to $FFFFFFFF in hex: $',0
 BADVALUE            DC.L    'INPUT VALUE EXCEEDS 32 BIT RANGE!',CR,LF,0
 BADCHARACTER        DC.L    'INPUT HAS ILLEGAL CHARACTER!',CR,LF,0
 BADADDRESS          DC.L    'SOURCE ADDRESS CANNOT BE BIGGER THEN DESTINATION ADDRESS!',CR,LF,0
