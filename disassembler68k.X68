@@ -2639,8 +2639,8 @@ WELMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                     DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',CR,LF,CR,LF, 0
 LINE_COUNT          DS.B    1
 
-MSGINPUT            DC.B    'Enter first memory address between $3000 to $FFFFFFFF in hex: $',0
-MSGINPUT2           DC.B    'Enter second memory address between $3000 to $FFFFFFFF in hex: $',0
+MSGINPUT            DC.B    'Enter first memory address between  $3000 and $FFFFFFFF in hex: $',0
+MSGINPUT2           DC.B    'Enter second memory address between $3000 and $FFFFFFFF in hex: $',0
 BADVALUE            DC.L    'INPUT VALUE EXCEEDS 32 BIT RANGE!',CR,LF,0
 BADCHARACTER        DC.L    'INPUT HAS ILLEGAL CHARACTER!',CR,LF,0
 BADADDRESS          DC.L    'SOURCE ADDRESS CANNOT BE BIGGER THEN DESTINATION ADDRESS!',CR,LF,0
