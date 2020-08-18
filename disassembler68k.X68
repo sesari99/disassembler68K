@@ -2553,13 +2553,13 @@ NEXTIO          CLR.L     D3
                 BGT      ENDPAGE ;so when equal, we are done
                 CMPI.B   #1,D5 ;hard cded page limit for first page
                 BEQ      SECONDPAGE
-                CMP.L    #1,D1
+                CMP.L    #18,D1
                 BEQ      NEWPAGELOOP
                 BNE      FEEDOPCODE
 
                 
 SECONDPAGE
-                CMP.L    #1,D1       ;hardcoded limit for other pages page. can be and expected to change
+                CMP.L    #31,D1       ;hardcoded limit for other pages page. can be and expected to change
                 BNE      FEEDOPCODE
                 ;check if user wants new page. if no exit. if yes continue to feedopcode.
 NEWPAGELOOP
@@ -2677,3 +2677,8 @@ SIZEVAR             DS.L    10     ; variable to save the final result
 * Put variables and constants here
 
     END    START        ; last line of source
+
+*~Font name~Courier New~
+*~Font size~10~
+*~Tab type~1~
+*~Tab size~4~
