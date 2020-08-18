@@ -1,15 +1,11 @@
 *-----------------------------------------------------------
-* Title      :  I/O
+* Title      :  Disassembler
 * Written by :  Sesario Imanputra, Zachary Liong, Micha Rice, Marci Ma
 * Date       :  
-* Description: Starts at 4000. For testing purposes, theres a bunch of ML codes to disassemble at 4000. Currently, the first ML code at 4000 is NOP.
-* afterwards, it will include ML of whatever we wrote after NOP.
-* current I/O should be able to detext values exceeding the 32 bit unsigned range (FFFFFFFF) and recognize invalid input.
-* if you input a lower case letter, it will automatically convert into uppercase. 
-*-----------------------------------------------------------   
+* Description: 
+*-----------------------------------------------------------
         ORG    $1000   
 START:                  ; first instruction of program   
-
 ;inputs for testing are  here:    
 
                 LEA     WELMSG,A1   ;Display intro message
@@ -2639,11 +2635,11 @@ WELMSG              DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                     DC.B    'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',CR,LF,CR,LF, 0
 LINE_COUNT          DS.B    1
 
-MSGINPUT            DC.B    'Enter first memory address between $3000 to $FFFFFFFF in hex: $',0
-MSGINPUT2           DC.B    'Enter second memory address between $3000 to $FFFFFFFF in hex: $',0
+MSGINPUT            DC.B    'Enter first memory address between  $3000 and $FFFFFFFE in hex: $',0
+MSGINPUT2           DC.B    'Enter second memory address between $3000 and $FFFFFFFE in hex: $',0
 BADVALUE            DC.L    'INPUT VALUE EXCEEDS 32 BIT RANGE!',CR,LF,0
 BADCHARACTER        DC.L    'INPUT HAS ILLEGAL CHARACTER!',CR,LF,0
-BADADDRESS          DC.L    'SOURCE ADDRESS CANNOT BE BIGGER THEN DESTINATION ADDRESS!',CR,LF,0
+BADADDRESS          DC.L    'SOURCE ADDRESS CANNOT BE BIGGER THEN DESTINATION ADDRESS! (CHECK FOR OVERFLOW)',CR,LF,0
 VALUETOOLOW         DC.L    'VALUE TOO LOW DUE TO LOW INPUT VALUE OR OVERFLOW!',CR,LF,0
 NEWPAGEMSG          DC.L    'ENTER TO CONTINUE... ',CR,LF,0
 
@@ -2665,8 +2661,3 @@ SIZEVAR             DS.L    10     ; variable to save the final result
 * Put variables and constants here
 
     END    START        ; last line of source
-
-*~Font name~Courier New~
-*~Font size~10~
-*~Tab type~1~
-*~Tab size~4~
